@@ -1,0 +1,154 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlserver"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String    @id @default(uuid()) @db.UniqueIdentifier
+  bankId       String    @unique @db.NVarChar(50)
+  fullName     String    @db.NVarChar(150)
+  passwordHash String    @db.NVarChar(255)
+  role         String    @default("USER") @db.NVarChar(20)
+  status       String    @default("PENDING") @db.NVarChar(20)
+  lastLoginAt  DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  createdPrograms        TrainingProgram[]       @relation("ProgramCreator")
+  participations         TrainingParticipation[]
+  approvedParticipations TrainingParticipation[] @relation("ParticipationApprover")
+  auditLogs              AuditLog[]
+
+  @@index([fullName])
+  @@index([status])
+  @@index([role])
+}
+
+model TrainingType {
+  id        String   @id @default(uuid()) @db.UniqueIdentifier
+  name      String   @unique @db.NVarChar(150)
+  active    Boolean  @default(true)
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  programs TrainingProgram[]
+}
+
+model Institution {
+  id        String   @id @default(uuid()) @db.UniqueIdentifier
+  name      String   @unique @db.NVarChar(200)
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  programs TrainingProgram[]
+}
+
+model ParticipationRole {
+  id        String   @id @default(uuid()) @db.UniqueIdentifier
+  name      String   @unique @db.NVarChar(150)
+  active    Boolean  @default(true)
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  participations TrainingParticipation[]
+}
+
+model CompletionStatus {
+  id        String   @id @default(uuid()) @db.UniqueIdentifier
+  name      String   @unique @db.NVarChar(150)
+  active    Boolean  @default(true)
+  isFinal   Boolean  @default(false)
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  participations TrainingParticipation[]
+}
+
+model TrainingProgram {
+  id             String   @id @default(uuid()) @db.UniqueIdentifier
+  name           String   @db.NVarChar(300)
+  locationScope  String   @db.NVarChar(20)
+  trainingTypeId String   @db.UniqueIdentifier
+  institutionId  String   @db.UniqueIdentifier
+  venue          String   @db.NVarChar(300)
+  description    String?  @db.NVarChar(Max)
+  active         Boolean  @default(true)
+  createdById    String   @db.UniqueIdentifier
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  trainingType   TrainingType            @relation(fields: [trainingTypeId], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  institution    Institution             @relation(fields: [institutionId], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  createdBy      User                    @relation("ProgramCreator", fields: [createdById], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  participations TrainingParticipation[]
+
+  @@index([name])
+  @@index([active])
+  @@index([locationScope])
+  @@index([institutionId])
+}
+
+model TrainingParticipation {
+  id                  String    @id @default(uuid()) @db.UniqueIdentifier
+  userId              String    @db.UniqueIdentifier
+  trainingProgramId   String    @db.UniqueIdentifier
+  deliveryMode        String    @db.NVarChar(20)
+  participationRoleId String    @db.UniqueIdentifier
+  fromDate            DateTime  @db.Date
+  toDate              DateTime  @db.Date
+  completionStatusId  String    @db.UniqueIdentifier
+  remarks             String?   @db.NVarChar(2000)
+  workflowStatus      String    @default("DRAFT") @db.NVarChar(20)
+  adminComment        String?   @db.NVarChar(2000)
+  submittedAt         DateTime?
+  approvedAt          DateTime?
+  approvedById        String?   @db.UniqueIdentifier
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  user              User              @relation(fields: [userId], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  trainingProgram   TrainingProgram   @relation(fields: [trainingProgramId], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  participationRole ParticipationRole @relation(fields: [participationRoleId], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  completionStatus  CompletionStatus  @relation(fields: [completionStatusId], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  approvedBy        User?             @relation("ParticipationApprover", fields: [approvedById], references: [id], onUpdate: NoAction, onDelete: NoAction)
+
+  @@index([userId])
+  @@index([trainingProgramId])
+  @@index([workflowStatus])
+  @@index([fromDate, toDate])
+  @@index([submittedAt])
+}
+
+model AuditLog {
+  id          String   @id @default(uuid()) @db.UniqueIdentifier
+  actorUserId String?  @db.UniqueIdentifier
+  action      String   @db.NVarChar(100)
+  entityType  String   @db.NVarChar(80)
+  entityId    String   @db.NVarChar(80)
+  beforeJson  String?  @db.NVarChar(Max)
+  afterJson   String?  @db.NVarChar(Max)
+  ipAddress   String?  @db.NVarChar(80)
+  userAgent   String?  @db.NVarChar(400)
+  createdAt   DateTime @default(now())
+
+  actor User? @relation(fields: [actorUserId], references: [id], onUpdate: NoAction, onDelete: NoAction)
+
+  @@index([action])
+  @@index([entityType, entityId])
+  @@index([createdAt])
+  @@index([actorUserId])
+}
+
+model AppSetting {
+  id                  String   @id @default("default") @db.NVarChar(20)
+  allowHybridDelivery Boolean  @default(true)
+  updatedAt           DateTime @updatedAt
+}

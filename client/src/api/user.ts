@@ -1,0 +1,38 @@
+import { api, toQuery } from "./client";
+import type { NamedEntity, Paginated, Participation, TrainingProgram } from "@/types";
+
+export const userApi = {
+  dashboard: () =>
+    api<{
+      kpis: {
+        total: number;
+        draft: number;
+        pendingReview: number;
+        approved: number;
+        completed: number;
+        local: number;
+        foreign: number;
+      };
+      recent: Participation[];
+    }>("/user/dashboard"),
+  lookups: () =>
+    api<{
+      trainingTypes: NamedEntity[];
+      institutions: NamedEntity[];
+      participationRoles: NamedEntity[];
+      completionStatuses: NamedEntity[];
+      allowHybridDelivery: boolean;
+    }>("/user/lookups"),
+  programs: (params: Record<string, string | number | undefined> = {}) =>
+    api<Paginated<TrainingProgram>>(`/user/training-programs${toQuery(params)}`),
+  program: (id: string) => api<TrainingProgram>(`/user/training-programs/${id}`),
+  participations: (params: Record<string, string | number | undefined> = {}) =>
+    api<Paginated<Participation>>(`/user/participations${toQuery(params)}`),
+  participation: (id: string) => api<Participation>(`/user/participations/${id}`),
+  createParticipation: (payload: unknown) =>
+    api<Participation>("/user/participations", { method: "POST", body: JSON.stringify(payload) }),
+  updateParticipation: (id: string, payload: unknown) =>
+    api<Participation>(`/user/participations/${id}`, { method: "PUT", body: JSON.stringify(payload) }),
+  submitParticipation: (id: string) =>
+    api<Participation>(`/user/participations/${id}/submit`, { method: "POST" }),
+};

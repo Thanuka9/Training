@@ -1,0 +1,51 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  --font-serif: "Source Serif 4", Georgia, "Times New Roman", serif;
+  --color-navy: #12355b;
+  --color-navy-700: #0d2946;
+  --color-navy-800: #081c31;
+  --color-gold: #c4a35a;
+  --color-gold-700: #a8863f;
+  --color-paper: #eef2f6;
+  --color-ink: #1c2833;
+  --color-muted: #5b6b7c;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  background:
+    radial-gradient(1100px 420px at 100% -8%, rgba(196, 163, 90, 0.1), transparent 55%),
+    linear-gradient(180deg, #f7f9fb 0%, var(--color-paper) 180px);
+  color: var(--color-ink);
+}
+
+#root {
+  min-height: 100svh;
+}
+
+h1,
+h2,
+.font-serif {
+  font-family: var(--font-serif);
+}
+
+::selection {
+  background: rgba(18, 53, 91, 0.18);
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator {
+  opacity: 0.7;
+}
+
+table tbody tr:hover td {
+  background: rgba(18, 53, 91, 0.035);
+}
