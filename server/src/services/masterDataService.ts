@@ -1,4 +1,5 @@
 import { Prisma } from "@prisma/client";
+import { JsonUniqueError } from "../db/jsonStore.js";
 import { prisma } from "../config/prisma.js";
 import { conflict, notFound, validationError } from "../utils/appError.js";
 import { parsePagination, paginatedResult } from "../utils/pagination.js";
@@ -6,7 +7,10 @@ import { writeAuditLog } from "../utils/audit.js";
 import type { Request } from "express";
 
 function handleUnique(error: unknown, message: string): never {
-  if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+  if (
+    error instanceof JsonUniqueError ||
+    (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002")
+  ) {
     throw conflict(message);
   }
   throw error;

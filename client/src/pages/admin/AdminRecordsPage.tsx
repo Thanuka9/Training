@@ -2,6 +2,7 @@ import { Link, useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { adminApi } from "@/api/admin";
 import { PageHeader, QueryState } from "@/components/PageHeader";
+import { DownloadButtons } from "@/components/DownloadButtons";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -18,7 +19,7 @@ export function AdminRecordsPage() {
   const filters = searchParamsRecord(params);
   const query = useQuery({
     queryKey: ["admin-records", filters],
-    queryFn: () => adminApi.participations({ ...filters, pageSize: 30 }),
+    queryFn: () => adminApi.participations({ ...filters, pageSize: 50 }),
   });
 
   function setFilter(key: string, value: string) {
@@ -30,7 +31,11 @@ export function AdminRecordsPage() {
 
   return (
     <div>
-      <PageHeader title="Participation Records" description="Review, correct and decide submitted training records." />
+      <PageHeader
+        title="Participation Records"
+        description="Review, correct and decide submitted training records."
+        actions={<DownloadButtons report="records" params={filters} />}
+      />
       <Card className="mb-4">
         <CardContent className="grid gap-3 pt-4 md:grid-cols-4">
           <div className="md:col-span-2">
@@ -69,6 +74,20 @@ export function AdminRecordsPage() {
             </Select>
           </div>
           <div>
+            <Label>Type of Training</Label>
+            <Select value={params.get("trainingTypeId") ?? ""} onChange={(e) => setFilter("trainingTypeId", e.target.value)}>
+              <option value="">All</option>
+              {lookups.data?.trainingTypes.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
+            </Select>
+          </div>
+          <div>
+            <Label>Institution</Label>
+            <Select value={params.get("institutionId") ?? ""} onChange={(e) => setFilter("institutionId", e.target.value)}>
+              <option value="">All</option>
+              {lookups.data?.institutions.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
+            </Select>
+          </div>
+          <div>
             <Label>Completion</Label>
             <Select value={params.get("completionStatusId") ?? ""} onChange={(e) => setFilter("completionStatusId", e.target.value)}>
               <option value="">All</option>
@@ -88,6 +107,9 @@ export function AdminRecordsPage() {
                   <Th>Name of the Training Program</Th>
                   <Th>Local / Foreign</Th>
                   <Th>Physical / Online</Th>
+                  <Th>Type of Training</Th>
+                  <Th>Institution</Th>
+                  <Th>Venue</Th>
                   <Th>Participating the Training as</Th>
                   <Th>From</Th>
                   <Th>To</Th>
@@ -105,6 +127,9 @@ export function AdminRecordsPage() {
                     <Td>{item.trainingProgram.name}</Td>
                     <Td>{locationLabel(item.trainingProgram.locationScope)}</Td>
                     <Td>{deliveryLabel(item.deliveryMode)}</Td>
+                    <Td>{item.trainingProgram.trainingType.name}</Td>
+                    <Td>{item.trainingProgram.institution.name}</Td>
+                    <Td>{item.trainingProgram.venue}</Td>
                     <Td>{item.participationRole.name}</Td>
                     <Td>{formatDate(item.fromDate)}</Td>
                     <Td>{formatDate(item.toDate)}</Td>

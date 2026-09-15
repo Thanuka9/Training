@@ -54,10 +54,10 @@ router.put("/completion-statuses/:id", asyncHandler(adminController.updateComple
 
 router.get("/reports/training-register", asyncHandler(adminController.trainingRegister));
 router.get("/reports/officer-summary", asyncHandler(adminController.officerSummary));
+router.get("/reports/officer-activity", asyncHandler(adminController.officerActivity));
 router.get("/reports/program-summary", asyncHandler(adminController.programSummary));
 router.get("/reports/institution-summary", asyncHandler(adminController.institutionSummary));
-router.get("/exports/training-register.xlsx", asyncHandler(adminController.exportRegisterXlsx));
-router.get("/exports/training-register.csv", asyncHandler(adminController.exportRegisterCsv));
+router.get("/exports/:file", asyncHandler(adminController.exportReport));
 
 router.get("/audit", asyncHandler(adminController.listAudit));
 router.get("/settings", asyncHandler(adminController.getSettings));

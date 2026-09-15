@@ -27,8 +27,78 @@ async function protectLastAdmin(targetId: string, nextRole?: Role, nextStatus?: 
   return target;
 }
 
-export async function listUsers(query: Record<string, unknown>) {
-  const { skip, take, page, pageSize, search, sortDirection } = parsePagination(query);
+export type OfficerTrainingStats = {
+  trainingCount: number;
+  attended: number;
+  drafts: number;
+  completed: number;
+  local: number;
+  foreign: number;
+  physical: number;
+  online: number;
+  hybrid: number;
+  lastTrainingDate: string | null;
+  neverAttended: boolean;
+};
+
+function emptyStats(): OfficerTrainingStats {
+  return {
+    trainingCount: 0,
+    attended: 0,
+    drafts: 0,
+    completed: 0,
+    local: 0,
+    foreign: 0,
+    physical: 0,
+    online: 0,
+    hybrid: 0,
+    lastTrainingDate: null,
+    neverAttended: true,
+  };
+}
+
+export async function trainingStatsByUser(userIds?: string[]) {
+  const map = new Map<string, OfficerTrainingStats>();
+  if (userIds && userIds.length === 0) return map;
+
+  const records = await prisma.trainingParticipation.findMany({
+    where: userIds ? { userId: { in: userIds } } : {},
+    include: {
+      completionStatus: true,
+      trainingProgram: { select: { locationScope: true } },
+    },
+  });
+
+  for (const record of records) {
+    const current = map.get(record.userId) ?? emptyStats();
+    current.trainingCount += 1;
+    if (record.workflowStatus === "DRAFT") {
+      current.drafts += 1;
+    } else {
+      current.attended += 1;
+      current.neverAttended = false;
+      if (record.completionStatus.name === "Completed") current.completed += 1;
+      if (record.trainingProgram.locationScope === "LOCAL") current.local += 1;
+      if (record.trainingProgram.locationScope === "FOREIGN") current.foreign += 1;
+      if (record.deliveryMode === "PHYSICAL") current.physical += 1;
+      if (record.deliveryMode === "ONLINE") current.online += 1;
+      if (record.deliveryMode === "HYBRID") current.hybrid += 1;
+      const from = record.fromDate.toISOString().slice(0, 10);
+      if (!current.lastTrainingDate || from > current.lastTrainingDate) current.lastTrainingDate = from;
+    }
+    map.set(record.userId, current);
+  }
+
+  return map;
+}
+
+function withStats<T extends { id: string }>(user: T, stats: Map<string, OfficerTrainingStats>) {
+  const current = stats.get(user.id) ?? emptyStats();
+  return { ...user, ...current, trainingCount: current.attended };
+}
+
+async function loadUsersWithStats(query: Record<string, unknown>) {
+  const { search, sortDirection } = parsePagination(query);
   const where: Prisma.UserWhereInput = {
     ...(query.role ? { role: query.role as Role } : {}),
     ...(query.status ? { status: query.status as UserStatus } : {}),
@@ -39,35 +109,53 @@ export async function listUsers(query: Record<string, unknown>) {
       : {}),
   };
 
-  const [items, total] = await prisma.$transaction([
-    prisma.user.findMany({
-      where,
-      skip,
-      take,
-      orderBy: { createdAt: sortDirection },
-      include: { _count: { select: { participations: true } } },
-    }),
-    prisma.user.count({ where }),
-  ]);
+  const users = await prisma.user.findMany({
+    where,
+    orderBy: { createdAt: sortDirection },
+  });
+  const stats = await trainingStatsByUser(users.map((item) => item.id));
+  let items = users.map((item) => withStats(toPublicUser(item), stats));
 
-  return paginatedResult(
-    items.map((item) => ({
-      ...toPublicUser(item),
-      trainingCount: item._count.participations,
-    })),
-    total,
-    page,
-    pageSize,
-  );
+  if (query.neverAttended === "true" || query.neverAttended === true) {
+    items = items.filter((item) => item.neverAttended && item.role === "USER");
+  } else if (query.neverAttended === "false" || query.neverAttended === false) {
+    items = items.filter((item) => !item.neverAttended);
+  }
+
+  return items;
+}
+
+export async function listUsers(query: Record<string, unknown>) {
+  const { skip, take, page, pageSize } = parsePagination(query);
+  const items = await loadUsersWithStats(query);
+  return paginatedResult(items.slice(skip, skip + take), items.length, page, pageSize);
+}
+
+export async function listUsersForExport(query: Record<string, unknown>) {
+  const items = await loadUsersWithStats(query);
+  return items.map((item) => ({
+    bankId: item.bankId,
+    fullName: item.fullName,
+    role: item.role,
+    status: item.status,
+    attended: item.attended,
+    completed: item.completed,
+    local: item.local,
+    foreign: item.foreign,
+    physical: item.physical,
+    online: item.online,
+    lastTrainingDate: item.lastTrainingDate ?? "",
+    neverAttended: item.neverAttended ? "Yes" : "No",
+    registered: item.createdAt ? new Date(item.createdAt).toISOString() : "",
+    lastLoginAt: item.lastLoginAt ? new Date(item.lastLoginAt).toISOString() : "",
+  }));
 }
 
 export async function getUser(id: string) {
-  const user = await prisma.user.findUnique({
-    where: { id },
-    include: { _count: { select: { participations: true } } },
-  });
+  const user = await prisma.user.findUnique({ where: { id } });
   if (!user) throw notFound("User");
-  return { ...toPublicUser(user), trainingCount: user._count.participations };
+  const stats = await trainingStatsByUser([id]);
+  return withStats(toPublicUser(user), stats);
 }
 
 export async function createAdminUser(

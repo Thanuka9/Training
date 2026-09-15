@@ -88,9 +88,17 @@ export const adminApi = {
   trainingRegister: (params: FilterParams = {}) =>
     api<Array<Record<string, unknown>>>(`/admin/reports/training-register${toQuery(params)}`),
   officerSummary: (params: FilterParams = {}) =>
-    api<{ columns: { key: string; label: string }[]; rows: Array<Record<string, unknown>> }>(
-      `/admin/reports/officer-summary${toQuery(params)}`,
-    ),
+    api<{
+      columns: { key: string; label: string }[];
+      rows: Array<Record<string, unknown>>;
+      neverAttended: number;
+      withTraining: number;
+    }>(`/admin/reports/officer-summary${toQuery(params)}`),
+  officerActivity: (params: FilterParams = {}) =>
+    api<{
+      totals: { officers: number; withTraining: number; neverAttended: number };
+      rows: Array<Record<string, unknown>>;
+    }>(`/admin/reports/officer-activity${toQuery(params)}`),
   programSummary: (params: FilterParams = {}) =>
     api<Array<Record<string, unknown>>>(`/admin/reports/program-summary${toQuery(params)}`),
   institutionSummary: (params: FilterParams = {}) =>
@@ -105,6 +113,17 @@ export const adminApi = {
     }),
 };
 
-export function exportUrl(kind: "xlsx" | "csv", params: FilterParams = {}) {
-  return `/api/admin/exports/training-register.${kind}${toQuery(params)}`;
+export function exportUrl(
+  report:
+    | "training-register"
+    | "officer-summary"
+    | "officer-activity"
+    | "program-summary"
+    | "institution-summary"
+    | "users"
+    | "records",
+  kind: "xlsx" | "csv",
+  params: FilterParams = {},
+) {
+  return `/api/admin/exports/${report}.${kind}${toQuery(params)}`;
 }

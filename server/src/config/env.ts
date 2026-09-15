@@ -14,6 +14,7 @@ const envSchema = z.object({
   ADMIN_BANK_ID: z.string().optional(),
   ADMIN_NAME: z.string().optional(),
   ADMIN_PASSWORD: z.string().optional(),
+  DATA_STORE: z.enum(["auto", "json", "sqlserver"]).optional(),
 });
 
 export type Env = z.infer<typeof envSchema>;

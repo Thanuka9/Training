@@ -1,11 +1,13 @@
 import { env } from "./config/env.js";
-import { prisma } from "./config/prisma.js";
+import { dbMode, initDb, prisma } from "./config/prisma.js";
 import { createApp } from "./app.js";
+
+await initDb();
 
 const app = createApp();
 
 const server = app.listen(env.PORT, () => {
-  console.log(`Training portal API listening on port ${env.PORT}`);
+  console.log(`Training portal API listening on port ${env.PORT} (${dbMode})`);
 });
 
 async function shutdown() {

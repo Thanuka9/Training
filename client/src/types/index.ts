@@ -14,6 +14,16 @@ export type PublicUser = {
   createdAt: string;
   updatedAt: string;
   trainingCount?: number;
+  attended?: number;
+  drafts?: number;
+  completed?: number;
+  local?: number;
+  foreign?: number;
+  physical?: number;
+  online?: number;
+  hybrid?: number;
+  lastTrainingDate?: string | null;
+  neverAttended?: boolean;
 };
 
 export type NamedEntity = {

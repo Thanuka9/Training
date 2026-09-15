@@ -29,6 +29,7 @@ export async function getDashboardSummary(query: Record<string, unknown>) {
     physical,
     online,
     hybrid,
+    totalOfficers,
   ] = await Promise.all([
     prisma.user.count({ where: { status: "ACTIVE", role: "USER" } }),
     prisma.user.count({ where: { status: "PENDING" } }),
@@ -62,6 +63,7 @@ export async function getDashboardSummary(query: Record<string, unknown>) {
     prisma.trainingParticipation.count({
       where: { ...submitted, deliveryMode: "HYBRID" },
     }),
+    prisma.user.count({ where: { role: "USER" } }),
   ]);
 
   const pendingRecords = await prisma.trainingParticipation.findMany({
@@ -72,6 +74,18 @@ export async function getDashboardSummary(query: Record<string, unknown>) {
     },
     orderBy: { submittedAt: "desc" },
     take: 8,
+  });
+
+  const attendedOfficers = await prisma.trainingParticipation.findMany({
+    where: { ...submitted, user: { role: "USER" } },
+    select: { userId: true },
+  });
+  const attendedIds = [...new Set(attendedOfficers.map((item) => item.userId))];
+  const neverAttendedOfficers = await prisma.user.findMany({
+    where: attendedIds.length ? { role: "USER", id: { notIn: attendedIds } } : { role: "USER" },
+    select: { id: true, fullName: true, bankId: true, status: true },
+    orderBy: { fullName: "asc" },
+    take: 20,
   });
 
   return {
@@ -90,6 +104,9 @@ export async function getDashboardSummary(query: Record<string, unknown>) {
       physicalTrainings: physical,
       onlineTrainings: online,
       hybridTrainings: hybrid,
+      totalOfficers,
+      officersWithTraining: attendedIds.length,
+      officersNeverAttended: Math.max(totalOfficers - attendedIds.length, 0),
     },
     pendingReviewsList: pendingRecords.map((item) => ({
       id: item.id,
@@ -98,6 +115,7 @@ export async function getDashboardSummary(query: Record<string, unknown>) {
       program: item.trainingProgram.name,
       submittedAt: item.submittedAt,
     })),
+    neverAttendedOfficers,
     completionRateDefinition: "Completed / (Completed + Not Completed)",
   };
 }

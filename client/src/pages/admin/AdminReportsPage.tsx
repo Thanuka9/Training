@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { adminApi, exportUrl } from "@/api/admin";
+import { adminApi } from "@/api/admin";
 import { PageHeader, QueryState } from "@/components/PageHeader";
+import { DownloadButtons } from "@/components/DownloadButtons";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -23,6 +25,22 @@ const registerColumns = [
   { key: "institution", label: "Institution" },
   { key: "venue", label: "Venue" },
   { key: "completionStatus", label: "Status of Completion" },
+  { key: "workflowStatus", label: "Workflow Status" },
+];
+
+const activityColumns = [
+  { key: "officer", label: "Name of the Officer" },
+  { key: "bankId", label: "Bank ID" },
+  { key: "status", label: "Account Status" },
+  { key: "attended", label: "Trainings Attended" },
+  { key: "completed", label: "Completed" },
+  { key: "local", label: "Local" },
+  { key: "foreign", label: "Foreign" },
+  { key: "physical", label: "Physical" },
+  { key: "online", label: "Online" },
+  { key: "hybrid", label: "Hybrid" },
+  { key: "lastTrainingDate", label: "Last Training Date" },
+  { key: "neverAttended", label: "Never Attended" },
 ];
 
 const programColumns = [
@@ -32,6 +50,7 @@ const programColumns = [
   { key: "institution", label: "Institution" },
   { key: "participants", label: "Participants" },
   { key: "completed", label: "Completed" },
+  { key: "notCompleted", label: "Not Completed" },
   { key: "completionRate", label: "Completion Rate" },
 ];
 
@@ -42,6 +61,8 @@ const institutionColumns = [
   { key: "completed", label: "Completed" },
 ];
 
+type Tab = "register" | "activity" | "officer" | "program" | "institution";
+
 function cellValue(key: string, value: unknown) {
   const text = value == null ? "" : String(value);
   if (key === "locationScope") return locationLabel(text);
@@ -51,28 +72,28 @@ function cellValue(key: string, value: unknown) {
 
 export function AdminReportsPage() {
   const [year, setYear] = useState(String(new Date().getFullYear()));
-  const [tab, setTab] = useState<"register" | "officer" | "program" | "institution">("register");
+  const [tab, setTab] = useState<Tab>("register");
   const params = { year };
   const register = useQuery({ queryKey: ["report-register", params], queryFn: () => adminApi.trainingRegister(params) });
   const officer = useQuery({ queryKey: ["report-officer", params], queryFn: () => adminApi.officerSummary(params) });
+  const activity = useQuery({ queryKey: ["report-activity", params], queryFn: () => adminApi.officerActivity(params) });
   const program = useQuery({ queryKey: ["report-program", params], queryFn: () => adminApi.programSummary(params) });
   const institution = useQuery({ queryKey: ["report-inst", params], queryFn: () => adminApi.institutionSummary(params) });
+
+  const reportByTab: Record<Tab, Parameters<typeof DownloadButtons>[0]["report"]> = {
+    register: "training-register",
+    activity: "officer-activity",
+    officer: "officer-summary",
+    program: "program-summary",
+    institution: "institution-summary",
+  };
 
   return (
     <div className="space-y-4">
       <PageHeader
         title="Reports"
-        description="Training Register columns match the current Excel register. Officer Summary is generated dynamically from participation roles, location and delivery mode."
-        actions={
-          <div className="flex gap-2">
-            <a href={exportUrl("xlsx", params)}>
-              <Button>Export Excel</Button>
-            </a>
-            <a href={exportUrl("csv", params)}>
-              <Button variant="secondary">Export CSV</Button>
-            </a>
-          </div>
-        }
+        description="Download Excel or CSV for the open report. Officer Activity includes officers who have not attended any training."
+        actions={<DownloadButtons report={reportByTab[tab]} params={params} />}
       />
       <Card>
         <CardContent className="flex flex-wrap items-end gap-3 pt-4">
@@ -80,15 +101,17 @@ export function AdminReportsPage() {
             <Label>Year</Label>
             <Input type="number" value={year} onChange={(e) => setYear(e.target.value)} className="w-32" />
           </div>
-          {(["register", "officer", "program", "institution"] as const).map((item) => (
+          {(
+            [
+              ["register", "Training Register"],
+              ["activity", "Officer Activity"],
+              ["officer", "Officer Summary"],
+              ["program", "Programme Summary"],
+              ["institution", "Institution Summary"],
+            ] as const
+          ).map(([item, label]) => (
             <Button key={item} variant={tab === item ? "default" : "secondary"} onClick={() => setTab(item)}>
-              {item === "register"
-                ? "Training Register"
-                : item === "officer"
-                  ? "Officer Summary"
-                  : item === "program"
-                    ? "Programme Summary"
-                    : "Institution Summary"}
+              {label}
             </Button>
           ))}
         </CardContent>
@@ -96,10 +119,33 @@ export function AdminReportsPage() {
       {tab === "register" ? (
         <ReportTable loading={register.isLoading} error={register.error} rows={register.data ?? []} columns={registerColumns} />
       ) : null}
+      {tab === "activity" ? (
+        <Card>
+          <CardHeader>
+            <CardTitle>
+              {activity.data
+                ? `${activity.data.totals.withTraining} officers with training · ${activity.data.totals.neverAttended} have not attended any`
+                : "Officer Activity"}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ReportTable
+              loading={activity.isLoading}
+              error={activity.error}
+              rows={activity.data?.rows ?? []}
+              columns={activityColumns}
+              bare
+            />
+          </CardContent>
+        </Card>
+      ) : null}
       {tab === "officer" ? (
         <Card>
           <CardHeader>
-            <CardTitle>Officer Summary</CardTitle>
+            <CardTitle>
+              Officer Summary
+              {officer.data ? ` · ${officer.data.withTraining} with training, ${officer.data.neverAttended} never attended` : ""}
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <QueryState isLoading={officer.isLoading} error={officer.error} empty={!officer.data?.rows.length}>
@@ -108,6 +154,7 @@ export function AdminReportsPage() {
                   <tr>
                     <Th>Name of the Officer</Th>
                     <Th>Bank ID</Th>
+                    <Th>Never Attended</Th>
                     {officer.data?.columns.map((column) => (
                       <Th key={column.key}>{column.label}</Th>
                     ))}
@@ -116,9 +163,12 @@ export function AdminReportsPage() {
                 </THead>
                 <tbody>
                   {officer.data?.rows.map((row) => (
-                    <tr key={String(row.bankId)}>
+                    <tr key={String(row.bankId)} className={row.neverAttended ? "bg-amber-50/70" : undefined}>
                       <Td>{String(row.officer)}</Td>
                       <Td>{String(row.bankId)}</Td>
+                      <Td>
+                        <Badge tone={row.neverAttended ? "amber" : "green"}>{row.neverAttended ? "Yes" : "No"}</Badge>
+                      </Td>
                       {officer.data?.columns.map((column) => (
                         <Td key={column.key}>{String((row.counts as Record<string, number>)[column.key] ?? 0)}</Td>
                       ))}
@@ -146,36 +196,40 @@ function ReportTable({
   error,
   rows,
   columns,
+  bare,
 }: {
   loading: boolean;
   error: Error | null;
   rows: Array<Record<string, unknown>>;
   columns: { key: string; label: string }[];
+  bare?: boolean;
 }) {
+  const table = (
+    <QueryState isLoading={loading} error={error} empty={!rows.length}>
+      <Table>
+        <THead>
+          <tr>
+            {columns.map((column) => (
+              <Th key={column.key}>{column.label}</Th>
+            ))}
+          </tr>
+        </THead>
+        <tbody>
+          {rows.map((row, index) => (
+            <tr key={index} className={row.neverAttended === "Yes" || row.neverAttended === true ? "bg-amber-50/70" : undefined}>
+              {columns.map((column) => (
+                <Td key={column.key}>{cellValue(column.key, row[column.key])}</Td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </Table>
+    </QueryState>
+  );
+  if (bare) return table;
   return (
     <Card>
-      <CardContent className="pt-4">
-        <QueryState isLoading={loading} error={error} empty={!rows.length}>
-          <Table>
-            <THead>
-              <tr>
-                {columns.map((column) => (
-                  <Th key={column.key}>{column.label}</Th>
-                ))}
-              </tr>
-            </THead>
-            <tbody>
-              {rows.map((row, index) => (
-                <tr key={index}>
-                  {columns.map((column) => (
-                    <Td key={column.key}>{cellValue(column.key, row[column.key])}</Td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </Table>
-        </QueryState>
-      </CardContent>
+      <CardContent className="pt-4">{table}</CardContent>
     </Card>
   );
 }

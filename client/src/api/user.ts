@@ -12,6 +12,16 @@ export const userApi = {
         completed: number;
         local: number;
         foreign: number;
+        physical: number;
+        online: number;
+        hybrid: number;
+        attended: number;
+      };
+      distributions: {
+        locationScope: { name: string; count: number }[];
+        deliveryMode: { name: string; count: number }[];
+        completionStatus: { name: string; count: number }[];
+        participationRole: { name: string; count: number }[];
       };
       recent: Participation[];
     }>("/user/dashboard"),

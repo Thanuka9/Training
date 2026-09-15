@@ -4,6 +4,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { adminApi } from "@/api/admin";
 import { PageHeader, QueryState } from "@/components/PageHeader";
+import { DownloadButtons } from "@/components/DownloadButtons";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -12,7 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
 import { Table, THead, Th, Td } from "@/components/ui/table";
-import { formatDateTime } from "@/lib/format";
+import { formatDate, formatDateTime } from "@/lib/format";
 import { searchParamsRecord } from "@/lib/utils";
 import type { PublicUser } from "@/types";
 
@@ -30,6 +31,8 @@ export function AdminUsersPage() {
       adminApi.users({
         search: params.get("search") ?? "",
         status: params.get("status") ?? "",
+        role: params.get("role") ?? "",
+        neverAttended: params.get("neverAttended") ?? "",
         pageSize: 50,
       }),
   });
@@ -54,8 +57,21 @@ export function AdminUsersPage() {
     <div>
       <PageHeader
         title="Users"
-        description="Approve registrations and manage officer accounts."
-        actions={<Button onClick={() => setCreateOpen(true)}>Add user</Button>}
+        description="Approve registrations, see how many trainings each officer has attended, and export the full list."
+        actions={
+          <div className="flex flex-wrap gap-2">
+            <DownloadButtons
+              report="users"
+              params={{
+                search: params.get("search") ?? "",
+                status: params.get("status") ?? "",
+                role: params.get("role") ?? "",
+                neverAttended: params.get("neverAttended") ?? "",
+              }}
+            />
+            <Button onClick={() => setCreateOpen(true)}>Add user</Button>
+          </div>
+        }
       />
       <Card className="mb-4">
         <CardContent className="flex flex-wrap gap-3 pt-4">
@@ -80,6 +96,24 @@ export function AdminUsersPage() {
               </option>
             ))}
           </Select>
+          <Select
+            value={params.get("role") ?? ""}
+            onChange={(e) => setParams({ ...searchParamsRecord(params), role: e.target.value })}
+            className="max-w-40"
+          >
+            <option value="">All roles</option>
+            <option value="USER">USER</option>
+            <option value="ADMIN">ADMIN</option>
+          </Select>
+          <Select
+            value={params.get("neverAttended") ?? ""}
+            onChange={(e) => setParams({ ...searchParamsRecord(params), neverAttended: e.target.value })}
+            className="max-w-56"
+          >
+            <option value="">All attendance</option>
+            <option value="false">Has attended training</option>
+            <option value="true">Has not attended any</option>
+          </Select>
           <Button variant="secondary" onClick={() => setParams({ ...searchParamsRecord(params), search })}>
             Search
           </Button>
@@ -95,7 +129,12 @@ export function AdminUsersPage() {
                   <Th>Full Name</Th>
                   <Th>Role</Th>
                   <Th>Account Status</Th>
-                  <Th>Training Count</Th>
+                  <Th>Attended</Th>
+                  <Th>Completed</Th>
+                  <Th>Local</Th>
+                  <Th>Foreign</Th>
+                  <Th>Last Training</Th>
+                  <Th>Never Attended</Th>
                   <Th>Registered</Th>
                   <Th>Last Login</Th>
                   <Th>Actions</Th>
@@ -103,7 +142,7 @@ export function AdminUsersPage() {
               </THead>
               <tbody>
                 {query.data?.items.map((user) => (
-                  <tr key={user.id}>
+                  <tr key={user.id} className={user.neverAttended && user.role === "USER" ? "bg-amber-50/70" : undefined}>
                     <Td>{user.bankId}</Td>
                     <Td>{user.fullName}</Td>
                     <Td>{user.role}</Td>
@@ -112,7 +151,18 @@ export function AdminUsersPage() {
                         {user.status}
                       </Badge>
                     </Td>
-                    <Td>{user.trainingCount ?? 0}</Td>
+                    <Td className="font-semibold">{user.attended ?? 0}</Td>
+                    <Td>{user.completed ?? 0}</Td>
+                    <Td>{user.local ?? 0}</Td>
+                    <Td>{user.foreign ?? 0}</Td>
+                    <Td>{formatDate(user.lastTrainingDate)}</Td>
+                    <Td>
+                      {user.role === "USER" ? (
+                        <Badge tone={user.neverAttended ? "amber" : "green"}>{user.neverAttended ? "Yes" : "No"}</Badge>
+                      ) : (
+                        "—"
+                      )}
+                    </Td>
                     <Td>{formatDateTime(user.createdAt)}</Td>
                     <Td>{formatDateTime(user.lastLoginAt)}</Td>
                     <Td className="space-x-2 whitespace-nowrap">
@@ -193,6 +243,7 @@ function CreateUserModal({
   const [fullName, setFullName] = useState("");
   const [bankId, setBankId] = useState("");
   const [password, setPassword] = useState("");
+  const [role, setRole] = useState<"USER" | "ADMIN">("USER");
 
   return (
     <Modal open={open} title="Add user" onClose={onClose}>
@@ -201,7 +252,7 @@ function CreateUserModal({
         onSubmit={async (event) => {
           event.preventDefault();
           try {
-            await adminApi.createUser({ fullName, bankId, password, role: "USER", status: "ACTIVE" });
+            await adminApi.createUser({ fullName, bankId, password, role, status: "ACTIVE" });
             toast.success("User created as active");
             setFullName("");
             setBankId("");
@@ -219,6 +270,13 @@ function CreateUserModal({
         <div>
           <Label>Bank ID</Label>
           <Input value={bankId} onChange={(e) => setBankId(e.target.value)} required />
+        </div>
+        <div>
+          <Label>Role</Label>
+          <Select value={role} onChange={(e) => setRole(e.target.value as "USER" | "ADMIN")}>
+            <option value="USER">USER</option>
+            <option value="ADMIN">ADMIN</option>
+          </Select>
         </div>
         <div>
           <Label>Temporary password</Label>

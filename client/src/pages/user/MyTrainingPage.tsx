@@ -39,6 +39,10 @@ export function MyTrainingPage() {
                   <Th>Name of the Training Program</Th>
                   <Th>Local / Foreign</Th>
                   <Th>Physical / Online</Th>
+                  <Th>Type of Training</Th>
+                  <Th>Institution</Th>
+                  <Th>Venue</Th>
+                  <Th>Participating as</Th>
                   <Th>From</Th>
                   <Th>To</Th>
                   <Th>Status of Completion</Th>
@@ -52,6 +56,10 @@ export function MyTrainingPage() {
                     <Td>{item.trainingProgram.name}</Td>
                     <Td>{locationLabel(item.trainingProgram.locationScope)}</Td>
                     <Td>{deliveryLabel(item.deliveryMode)}</Td>
+                    <Td>{item.trainingProgram.trainingType.name}</Td>
+                    <Td>{item.trainingProgram.institution.name}</Td>
+                    <Td>{item.trainingProgram.venue}</Td>
+                    <Td>{item.participationRole.name}</Td>
                     <Td>{formatDate(item.fromDate)}</Td>
                     <Td>{formatDate(item.toDate)}</Td>
                     <Td>

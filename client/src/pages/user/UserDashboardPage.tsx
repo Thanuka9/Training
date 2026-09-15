@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, THead, Th, Td } from "@/components/ui/table";
 import { KpiCard, PageHeader, QueryState } from "@/components/PageHeader";
 import { CompletionBadge, WorkflowBadge } from "@/components/StatusBadge";
+import { BarBlock, ChartCard, Donut } from "@/components/Charts";
 import { deliveryLabel, formatDate, locationLabel } from "@/lib/format";
 import { useAuth } from "@/features/auth/AuthProvider";
 
@@ -26,13 +27,31 @@ export function UserDashboardPage() {
         }
       />
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <KpiCard label="Total Training Records" value={data?.kpis.total ?? "—"} />
+        <KpiCard label="Trainings attended" value={data?.kpis.attended ?? "—"} hint="Submitted records, excluding drafts" />
+        <KpiCard label="Total records" value={data?.kpis.total ?? "—"} />
         <KpiCard label="Draft" value={data?.kpis.draft ?? "—"} />
         <KpiCard label="Pending Review" value={data?.kpis.pendingReview ?? "—"} />
         <KpiCard label="Approved" value={data?.kpis.approved ?? "—"} />
         <KpiCard label="Completed" value={data?.kpis.completed ?? "—"} />
         <KpiCard label="Local" value={data?.kpis.local ?? "—"} />
         <KpiCard label="Foreign" value={data?.kpis.foreign ?? "—"} />
+        <KpiCard label="Physical" value={data?.kpis.physical ?? "—"} />
+        <KpiCard label="Online" value={data?.kpis.online ?? "—"} />
+        <KpiCard label="Hybrid" value={data?.kpis.hybrid ?? "—"} />
+      </div>
+      <div className="grid gap-4 xl:grid-cols-2">
+        <ChartCard title="Local vs Foreign">
+          <Donut data={data?.distributions.locationScope ?? []} />
+        </ChartCard>
+        <ChartCard title="Physical vs Online vs Hybrid">
+          <Donut data={data?.distributions.deliveryMode ?? []} />
+        </ChartCard>
+        <ChartCard title="Completion status">
+          <BarBlock data={data?.distributions.completionStatus ?? []} />
+        </ChartCard>
+        <ChartCard title="Participation role">
+          <BarBlock data={data?.distributions.participationRole ?? []} />
+        </ChartCard>
       </div>
       <Card>
         <CardHeader>
@@ -51,6 +70,9 @@ export function UserDashboardPage() {
                   <Th>Name of the Training Program</Th>
                   <Th>Local / Foreign</Th>
                   <Th>Physical / Online</Th>
+                  <Th>Type of Training</Th>
+                  <Th>Institution</Th>
+                  <Th>Participating as</Th>
                   <Th>From</Th>
                   <Th>To</Th>
                   <Th>Status of Completion</Th>
@@ -64,6 +86,9 @@ export function UserDashboardPage() {
                     <Td className="font-medium">{item.trainingProgram.name}</Td>
                     <Td>{locationLabel(item.trainingProgram.locationScope)}</Td>
                     <Td>{deliveryLabel(item.deliveryMode)}</Td>
+                    <Td>{item.trainingProgram.trainingType.name}</Td>
+                    <Td>{item.trainingProgram.institution.name}</Td>
+                    <Td>{item.participationRole.name}</Td>
                     <Td>{formatDate(item.fromDate)}</Td>
                     <Td>{formatDate(item.toDate)}</Td>
                     <Td>

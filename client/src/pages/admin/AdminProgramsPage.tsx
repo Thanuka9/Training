@@ -48,8 +48,10 @@ export function AdminProgramsPage() {
                   <Th>Type</Th>
                   <Th>Institution</Th>
                   <Th>Venue</Th>
+                  <Th>Description</Th>
                   <Th>Status</Th>
                   <Th>Participants</Th>
+                  <Th>Created by</Th>
                   <Th></Th>
                 </tr>
               </THead>
@@ -61,10 +63,12 @@ export function AdminProgramsPage() {
                     <Td>{item.trainingType.name}</Td>
                     <Td>{item.institution.name}</Td>
                     <Td>{item.venue}</Td>
+                    <Td className="max-w-xs truncate" title={item.description ?? ""}>{item.description || "—"}</Td>
                     <Td>
                       <Badge tone={item.active ? "green" : "slate"}>{item.active ? "Active" : "Archived"}</Badge>
                     </Td>
                     <Td>{item._count?.participations ?? 0}</Td>
+                    <Td>{item.createdBy?.fullName ?? "—"}</Td>
                     <Td className="space-x-2 whitespace-nowrap">
                       <button className="text-navy underline" onClick={() => setEditing(item)}>Edit</button>
                       {item.active ? (

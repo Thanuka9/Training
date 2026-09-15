@@ -164,10 +164,12 @@ export function ParticipationFormPage() {
               <p className="sm:col-span-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-gold-700">
                 Programme details (Admin-controlled)
               </p>
+              <ReadOnly label="Name of the Training Program" value={selectedProgram.name} />
               <ReadOnly label="Local / Foreign" value={locationLabel(selectedProgram.locationScope)} />
               <ReadOnly label="Type of Training" value={selectedProgram.trainingType.name} />
               <ReadOnly label="Institution" value={selectedProgram.institution.name} />
               <ReadOnly label="Venue" value={selectedProgram.venue} />
+              <ReadOnly label="Description" value={selectedProgram.description?.trim() || "—"} />
             </div>
           ) : (
             <p className="text-sm text-slate-500">Programme details will appear after selection.</p>

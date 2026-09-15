@@ -106,16 +106,25 @@ export function serializeParticipation(
 }
 
 export async function getUserDashboard(userId: string) {
-  const [all, local, foreign] = await Promise.all([
+  const [all, local, foreign, physical, online, hybrid] = await Promise.all([
     prisma.trainingParticipation.findMany({
       where: { userId },
-      include: { completionStatus: true },
+      include: { completionStatus: true, participationRole: true, trainingProgram: { select: { locationScope: true } } },
     }),
     prisma.trainingParticipation.count({
       where: { userId, trainingProgram: { locationScope: "LOCAL" } },
     }),
     prisma.trainingParticipation.count({
       where: { userId, trainingProgram: { locationScope: "FOREIGN" } },
+    }),
+    prisma.trainingParticipation.count({
+      where: { userId, deliveryMode: "PHYSICAL" },
+    }),
+    prisma.trainingParticipation.count({
+      where: { userId, deliveryMode: "ONLINE" },
+    }),
+    prisma.trainingParticipation.count({
+      where: { userId, deliveryMode: "HYBRID" },
     }),
   ]);
 
@@ -126,6 +135,18 @@ export async function getUserDashboard(userId: string) {
     take: 8,
   });
 
+  const countBy = (keyFn: (item: (typeof all)[number]) => string) => {
+    const map = new Map<string, number>();
+    for (const item of all) {
+      if (item.workflowStatus === "DRAFT") continue;
+      const key = keyFn(item);
+      map.set(key, (map.get(key) ?? 0) + 1);
+    }
+    return [...map.entries()].map(([name, count]) => ({ name, count }));
+  };
+
+  const attended = all.filter((item) => item.workflowStatus !== "DRAFT");
+
   return {
     kpis: {
       total: all.length,
@@ -135,6 +156,16 @@ export async function getUserDashboard(userId: string) {
       completed: all.filter((item) => item.completionStatus.name === "Completed").length,
       local,
       foreign,
+      physical,
+      online,
+      hybrid,
+      attended: attended.length,
+    },
+    distributions: {
+      locationScope: countBy((item) => item.trainingProgram.locationScope),
+      deliveryMode: countBy((item) => item.deliveryMode),
+      completionStatus: countBy((item) => item.completionStatus.name),
+      participationRole: countBy((item) => item.participationRole.name),
     },
     recent: recent.map(serializeParticipation),
   };

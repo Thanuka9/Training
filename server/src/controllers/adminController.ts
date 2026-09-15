@@ -21,6 +21,7 @@ import {
   adminUpdateParticipationSchema,
 } from "../validators/participation.js";
 import { settingsSchema } from "../validators/query.js";
+import { validationError } from "../utils/appError.js";
 
 export async function lookups(_req: Request, res: Response) {
   return sendSuccess(res, await masterData.getActiveLookups());
@@ -196,6 +197,9 @@ export async function trainingRegister(req: Request, res: Response) {
 export async function officerSummary(req: Request, res: Response) {
   return sendSuccess(res, await reportService.getOfficerSummary(req.query));
 }
+export async function officerActivity(req: Request, res: Response) {
+  return sendSuccess(res, await reportService.getOfficerActivity(req.query));
+}
 export async function programSummary(req: Request, res: Response) {
   return sendSuccess(res, await reportService.getProgramSummary(req.query));
 }
@@ -203,20 +207,52 @@ export async function institutionSummary(req: Request, res: Response) {
   return sendSuccess(res, await reportService.getInstitutionSummary(req.query));
 }
 
-export async function exportRegisterXlsx(req: Request, res: Response) {
-  const workbook = await reportService.buildRegisterWorkbook(req.query);
+export async function exportReport(req: Request, res: Response) {
+  const match = /^([a-z0-9-]+)\.(xlsx|csv)$/i.exec(String(req.params.file ?? ""));
+  const report = (match?.[1] ?? "").toLowerCase();
+  const format = (match?.[2] ?? "").toLowerCase();
+  const allowed = new Set([
+    "training-register",
+    "records",
+    "officer-summary",
+    "officer-activity",
+    "program-summary",
+    "institution-summary",
+    "users",
+  ]);
+  if (!allowed.has(report) || (format !== "xlsx" && format !== "csv")) {
+    throw validationError("Unknown report or format");
+  }
+
+  const payload = await reportService.getExportPayload(report, req.query as Record<string, unknown>);
+  if (format === "csv") {
+    const csvRows = payload.rows.map((row) =>
+      Object.fromEntries(payload.columns.map((column) => [column.header, row[column.key]])),
+    );
+    const csv = reportService.toCsv(
+      csvRows,
+      payload.columns.map((column) => column.header),
+    );
+    res.setHeader("Content-Type", "text/csv; charset=utf-8");
+    res.setHeader("Content-Disposition", `attachment; filename=${payload.filename}.csv`);
+    return res.send(csv);
+  }
+
+  const workbook = reportService.buildWorkbook(payload.sheet, payload.columns, payload.rows);
   res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-  res.setHeader("Content-Disposition", "attachment; filename=training-register.xlsx");
+  res.setHeader("Content-Disposition", `attachment; filename=${payload.filename}.xlsx`);
   await workbook.xlsx.write(res);
   res.end();
 }
 
+export async function exportRegisterXlsx(req: Request, res: Response) {
+  req.params.file = "training-register.xlsx";
+  return exportReport(req, res);
+}
+
 export async function exportRegisterCsv(req: Request, res: Response) {
-  const rows = await reportService.getTrainingRegister(req.query);
-  const csv = reportService.toCsv(rows);
-  res.setHeader("Content-Type", "text/csv; charset=utf-8");
-  res.setHeader("Content-Disposition", "attachment; filename=training-register.csv");
-  res.send(csv);
+  req.params.file = "training-register.csv";
+  return exportReport(req, res);
 }
 
 export async function listAudit(req: Request, res: Response) {

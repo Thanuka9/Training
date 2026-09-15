@@ -3,6 +3,7 @@ import cors from "cors";
 import helmet from "helmet";
 import cookieParser from "cookie-parser";
 import { env } from "./config/env.js";
+import { dbMode } from "./config/prisma.js";
 import authRoutes from "./routes/auth.js";
 import userRoutes from "./routes/user.js";
 import adminRoutes from "./routes/admin.js";
@@ -26,7 +27,7 @@ export function createApp() {
   app.use(cookieParser());
 
   app.get("/api/health", (_req, res) => {
-    res.json({ success: true, data: { status: "ok" } });
+    res.json({ success: true, data: { status: "ok", store: dbMode } });
   });
 
   app.use("/api/auth", authRoutes);

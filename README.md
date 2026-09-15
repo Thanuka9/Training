@@ -13,7 +13,7 @@ Internal web application that replaces the manual Excel training register (`2025
 
 - Client: React, TypeScript, Vite, Tailwind CSS, TanStack Query, Recharts
 - Server: Node.js, Express, TypeScript, Zod, Prisma
-- Database: Microsoft SQL Server
+- Database: Microsoft SQL Server in production; JSON file store (`server/data/store.json`) as a local fallback when SQL Server is not running
 
 ## Prerequisites
 
@@ -63,6 +63,23 @@ SQL Server does not support native enums. Roles, workflow status, local/foreign 
 
 The Vite dev server proxies `/api` to the Express API so the HttpOnly session cookie stays first-party.
 
+## Local testing without SQL Server
+
+If SQL Server is not installed or `localhost:1433` is unreachable, the API automatically uses a JSON file store at `server/data/store.json` and seeds demo data on first start.
+
+```env
+DATA_STORE=auto
+```
+
+- `auto` (default in development): try SQL Server, fall back to JSON
+- `json`: always use the file store
+- `sqlserver`: require SQL Server and fail if it is down
+
+Check `/api/health` — it reports `"store": "json"` or `"store": "sqlserver"`.
+
+Then sign in as Thanuka Ellepola / Bank ID `9672` / password `Training9672`.
+
+
 ## Seeded accounts
 
 | Role | Full Name | Bank ID | Password |
@@ -84,7 +101,7 @@ Self-registered officers start as `PENDING` and cannot log in until an Admin app
 | `/admin` | Admin dashboard |
 | `/admin/training-programs` | Yellow-field programme master |
 | `/admin/records` | Review workflow |
-| `/admin/reports` | Register and officer summary |
+| `/admin/reports` | Register, officer activity, summaries, Excel/CSV downloads |
 
 ## KPI definitions
 
@@ -93,7 +110,9 @@ Self-registered officers start as `PENDING` and cannot log in until an Admin app
 - **Completed Trainings** = completion status named `Completed`
 - **Completion Rate** = Completed / (Completed + Not Completed). Planned and Ongoing records are excluded from the denominator.
 
-Admin total record cards distinguish **all database records including drafts** from **submitted records**.
+Admin total record cards distinguish **all database records including drafts** from **submitted records**. **Officers with no training** counts USER accounts that have no submitted (non-draft) participation records.
+
+Admin reports can be downloaded as Excel and CSV: Training Register, Officer Activity, Officer Summary, Programme Summary, Institution Summary, Users, and the current Participation Records filter.
 
 ## Security
 

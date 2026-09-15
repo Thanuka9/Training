@@ -1,21 +1,7 @@
-import { useMemo, useState, type ReactNode } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  Cell,
-  Legend,
-  Line,
-  LineChart,
-  Pie,
-  PieChart,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
+import { CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { adminApi } from "@/api/admin";
 import { KpiCard, PageHeader, QueryState } from "@/components/PageHeader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -23,8 +9,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-
-const COLORS = ["#1b365d", "#b08d57", "#3b82f6", "#0f766e", "#b45309", "#be123c"];
+import { BarBlock, ChartCard, Donut } from "@/components/Charts";
+import { LINE_COLOR } from "@/lib/chartColors";
 
 export function AdminDashboardPage() {
   const navigate = useNavigate();
@@ -38,11 +24,15 @@ export function AdminDashboardPage() {
   const officers = useQuery({ queryKey: ["admin-officers", filters], queryFn: () => adminApi.topOfficers(filters) });
 
   const kpis = (summary.data?.kpis ?? {}) as Record<string, number>;
+  const neverAttended =
+    (summary.data?.neverAttendedOfficers as Array<{ id: string; fullName: string; bankId: string; status: string }> | undefined) ?? [];
 
   const cards = useMemo(
     () => [
       ["Total Active Users", kpis.activeUsers, "/admin/users?status=ACTIVE"],
       ["Pending User Registrations", kpis.pendingRegistrations, "/admin/users?status=PENDING"],
+      ["Officers with training", kpis.officersWithTraining, "/admin/users?neverAttended=false"],
+      ["Officers with no training", kpis.officersNeverAttended, "/admin/users?neverAttended=true"],
       ["Total Training Programs", kpis.totalPrograms, "/admin/training-programs"],
       ["Total Participation Records", kpis.totalSubmittedRecords, "/admin/records"],
       ["Pending Reviews", kpis.pendingReviews, "/admin/records?workflowStatus=SUBMITTED"],
@@ -53,6 +43,7 @@ export function AdminDashboardPage() {
       ["Foreign Trainings", kpis.foreignTrainings, "/admin/records?locationScope=FOREIGN"],
       ["Physical Trainings", kpis.physicalTrainings, "/admin/records?deliveryMode=PHYSICAL"],
       ["Online Trainings", kpis.onlineTrainings, "/admin/records?deliveryMode=ONLINE"],
+      ["Hybrid Trainings", kpis.hybridTrainings, "/admin/records?deliveryMode=HYBRID"],
     ],
     [kpis],
   );
@@ -112,14 +103,20 @@ export function AdminDashboardPage() {
             </Select>
           </div>
           <div className="md:col-span-4">
-            <Button variant="secondary" onClick={() => { setYear(String(new Date().getFullYear())); setFilters({ year: String(new Date().getFullYear()) }); }}>
+            <Button
+              variant="secondary"
+              onClick={() => {
+                setYear(String(new Date().getFullYear()));
+                setFilters({ year: String(new Date().getFullYear()) });
+              }}
+            >
               Reset filters
             </Button>
           </div>
         </CardContent>
       </Card>
       <QueryState isLoading={summary.isLoading} error={summary.error}>
-        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
           {cards.map(([label, value, href]) => (
             <KpiCard key={String(label)} label={String(label)} value={value ?? "—"} onClick={() => navigate(String(href))} />
           ))}
@@ -132,18 +129,19 @@ export function AdminDashboardPage() {
         <ChartCard title="Training participation by month">
           <ResponsiveContainer width="100%" height={260}>
             <LineChart data={monthly.data?.months ?? []}>
-              <CartesianGrid strokeDasharray="3 3" />
+              <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
               <XAxis dataKey="label" />
               <YAxis allowDecimals={false} />
               <Tooltip />
-              <Line type="monotone" dataKey="count" stroke="#1b365d" strokeWidth={2} />
+              <Legend />
+              <Line type="monotone" name="Participations" dataKey="count" stroke={LINE_COLOR} strokeWidth={2} dot={{ r: 3, fill: LINE_COLOR }} />
             </LineChart>
           </ResponsiveContainer>
         </ChartCard>
         <ChartCard title="Local vs Foreign">
           <Donut data={distributions.data?.locationScope ?? []} />
         </ChartCard>
-        <ChartCard title="Physical vs Online">
+        <ChartCard title="Physical vs Online vs Hybrid">
           <Donut data={distributions.data?.deliveryMode ?? []} />
         </ChartCard>
         <ChartCard title="Participation role">
@@ -162,66 +160,52 @@ export function AdminDashboardPage() {
           <BarBlock data={(officers.data ?? []).map((item) => ({ name: item.name, count: item.count }))} />
         </ChartCard>
       </div>
-      <Card>
-        <CardHeader>
-          <CardTitle>Pending Reviews</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <ul className="space-y-2 text-sm">
-            {((summary.data?.pendingReviewsList as Array<{ id: string; officer: string; program: string }> | undefined) ?? []).map((item) => (
-              <li key={item.id}>
-                <button className="text-left text-navy underline" onClick={() => navigate(`/admin/records/${item.id}`)}>
-                  {item.officer} — {item.program}
-                </button>
-              </li>
-            ))}
-            {!((summary.data?.pendingReviewsList as unknown[]) ?? []).length ? (
-              <li className="text-slate-500">No pending reviews.</li>
+      <div className="grid gap-4 xl:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle>Pending Reviews</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ul className="space-y-2 text-sm">
+              {((summary.data?.pendingReviewsList as Array<{ id: string; officer: string; program: string }> | undefined) ?? []).map((item) => (
+                <li key={item.id}>
+                  <button className="text-left text-navy underline" onClick={() => navigate(`/admin/records/${item.id}`)}>
+                    {item.officer} — {item.program}
+                  </button>
+                </li>
+              ))}
+              {!((summary.data?.pendingReviewsList as unknown[]) ?? []).length ? (
+                <li className="text-slate-500">No pending reviews.</li>
+              ) : null}
+            </ul>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle>Officers who have not attended any training</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ul className="space-y-2 text-sm">
+              {neverAttended.map((item) => (
+                <li key={item.id} className="flex items-center justify-between gap-3">
+                  <button className="text-left text-navy underline" onClick={() => navigate(`/admin/records?bankId=${item.bankId}`)}>
+                    {item.fullName} ({item.bankId})
+                  </button>
+                  <span className="text-xs text-slate-500">{item.status}</span>
+                </li>
+              ))}
+              {!neverAttended.length ? (
+                <li className="text-slate-500">Every officer has at least one submitted training record.</li>
+              ) : null}
+            </ul>
+            {neverAttended.length ? (
+              <button className="mt-3 text-sm text-navy underline" onClick={() => navigate("/admin/users?neverAttended=true")}>
+                View full list
+              </button>
             ) : null}
-          </ul>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      </div>
     </div>
-  );
-}
-
-function ChartCard({ title, children }: { title: string; children: ReactNode }) {
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{title}</CardTitle>
-      </CardHeader>
-      <CardContent>{children}</CardContent>
-    </Card>
-  );
-}
-
-function Donut({ data }: { data: { name: string; count: number }[] }) {
-  return (
-    <ResponsiveContainer width="100%" height={260}>
-      <PieChart>
-        <Pie data={data} dataKey="count" nameKey="name" innerRadius={55} outerRadius={90}>
-          {data.map((entry, index) => (
-            <Cell key={entry.name} fill={COLORS[index % COLORS.length]} />
-          ))}
-        </Pie>
-        <Tooltip />
-        <Legend />
-      </PieChart>
-    </ResponsiveContainer>
-  );
-}
-
-function BarBlock({ data }: { data: { name: string; count: number }[] }) {
-  return (
-    <ResponsiveContainer width="100%" height={260}>
-      <BarChart data={data}>
-        <CartesianGrid strokeDasharray="3 3" />
-        <XAxis dataKey="name" hide={data.length > 6} interval={0} />
-        <YAxis allowDecimals={false} />
-        <Tooltip />
-        <Bar dataKey="count" fill="#1b365d" />
-      </BarChart>
-    </ResponsiveContainer>
   );
 }
