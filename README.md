@@ -83,16 +83,16 @@ Check `/api/health` — it reports `"store": "json"` or `"store": "sqlserver"`.
 
 ### Demo accounts (JSON seed)
 
-Login uses **Bank ID as the username** (there is no separate username field). The seeded main admin is `ADMIN001` — do not remove it.
+Login uses **Bank ID as the username** (there is no separate username field). The seeded **super admin** is controlled by `ADMIN_BANK_ID` (default `ADMIN001`) — do not remove it.
 
 | Role | Bank ID | Password | Notes |
 |---|---|---|---|
-| Admin | `ADMIN001` | `ChangeMeNow123` | Primary / main admin login |
+| Super admin | `ADMIN001` | `ChangeMeNow123` | From `ADMIN_BANK_ID` — only this account can create other admins |
 | Officer | `9672` | `Training9672` | Thanuka Ellepola — has training |
 | Officer | `1001`–`1005` | `Training9672` | Mix of attended / never attended |
 | Pending | `2001` | `Training9672` | Cannot log in until approved |
 
-Admins are **separate accounts** (created with role ADMIN). Officers are not promoted to admin. Officer rankings, never-attended lists, and Compare use USER accounts only.
+Admins are **separate accounts**. Officers are never promoted to admin. Only the super admin can open **Admins** and create additional ADMIN logins. Officer rankings, never-attended lists, and Compare use USER accounts only.
 
 ### Where admin “adds things” for forms
 
@@ -104,7 +104,7 @@ Admins are **separate accounts** (created with role ADMIN). Officers are not pro
 
 | Role | Full Name | Bank ID | Password |
 |---|---|---|---|
-| Admin | System Administrator | `ADMIN001` | from `ADMIN_PASSWORD` (default `ChangeMeNow123`) |
+| Super admin | System Administrator | `ADMIN001` (`ADMIN_BANK_ID`) | from `ADMIN_PASSWORD` (default `ChangeMeNow123`) |
 | Test officer | Thanuka Ellepola | `9672` | from `TEST_USER_PASSWORD` (default `Training9672`) |
 
 The test officer is created as `ACTIVE` so it can be used immediately after seed.
@@ -119,9 +119,9 @@ Self-registered officers start as `PENDING` and cannot log in until an Admin app
 | `/app` | Officer dashboard |
 | `/app/training/new` | Record participation |
 | `/admin` | Department admin dashboard |
-| `/admin/me` | Signed-in admin’s personal attendance dashboard |
+| `/admin/admins` | Super admin only — create/list admin accounts |
 | `/admin/analytics/compare` | Compare two officers (sidebar **Compare** only) |
-| `/admin/users` | Users (create USER or ADMIN accounts; no promote-from-officer) |
+| `/admin/users` | Officers (create USER accounts only) |
 | `/admin/training-programs` | Yellow-field programme master |
 | `/admin/records` | Review workflow |
 | `/admin/reports` | Register, officer activity, summaries, Excel/CSV downloads |

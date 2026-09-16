@@ -5,6 +5,7 @@ import { env } from "../config/env.js";
 import { verifyAuthToken } from "../utils/jwt.js";
 import { unauthorized, forbidden } from "../utils/appError.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
+import { isSuperAdminBankId } from "../utils/superAdmin.js";
 
 export type AuthenticatedUser = {
   id: string;
@@ -87,4 +88,14 @@ export function requireRole(...roles: Role[]) {
     }
     next();
   };
+}
+
+/** Only the env/hardcoded super admin Bank ID may manage admin accounts. */
+export function requireSuperAdmin(req: Request, _res: Response, next: NextFunction) {
+  const user = requireAuth(req);
+  if (user.role !== "ADMIN" || user.status !== "ACTIVE" || !isSuperAdminBankId(user.bankId)) {
+    next(forbidden("Only the super administrator can manage admin accounts"));
+    return;
+  }
+  next();
 }

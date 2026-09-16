@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { asyncHandler } from "../utils/asyncHandler.js";
-import { authenticate, requireRole } from "../middleware/auth.js";
+import { authenticate, requireRole, requireSuperAdmin } from "../middleware/auth.js";
 import * as adminController from "../controllers/adminController.js";
 
 const router = Router();
@@ -17,7 +17,9 @@ router.get("/dashboard/rankings", asyncHandler(adminController.dashboardRankings
 router.get("/dashboard/yearly", asyncHandler(adminController.dashboardYearly));
 router.get("/dashboard/compare", asyncHandler(adminController.dashboardCompare));
 router.get("/officers", asyncHandler(adminController.listOfficersSelect));
-router.get("/me/dashboard", asyncHandler(adminController.selfDashboard));
+
+router.get("/admins", requireSuperAdmin, asyncHandler(adminController.listAdmins));
+router.post("/admins", requireSuperAdmin, asyncHandler(adminController.createAdmin));
 
 router.get("/users", asyncHandler(adminController.listUsers));
 router.post("/users", asyncHandler(adminController.createUser));

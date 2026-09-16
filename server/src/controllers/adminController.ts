@@ -16,7 +16,7 @@ import {
   institutionSchema,
   completionStatusSchema,
 } from "../validators/masterData.js";
-import { adminCreateUserSchema, adminUpdateUserSchema } from "../validators/user.js";
+import { adminCreateUserSchema, adminCreateAdminSchema, adminUpdateUserSchema } from "../validators/user.js";
 import {
   adminCommentSchema,
   adminUpdateParticipationSchema,
@@ -71,13 +71,12 @@ export async function officerDashboard(req: Request, res: Response) {
   return sendSuccess(res, await officerAnalytics.getAdminOfficerDashboard(req.params.id));
 }
 
-export async function selfDashboard(req: Request, res: Response) {
-  const actor = requireAuth(req);
-  return sendSuccess(res, await officerAnalytics.getAdminSelfDashboard(actor.id));
-}
-
 export async function listUsers(req: Request, res: Response) {
   return sendSuccess(res, await userService.listUsers(req.query));
+}
+
+export async function listAdmins(req: Request, res: Response) {
+  return sendSuccess(res, await userService.listAdmins(req.query));
 }
 
 export async function getUser(req: Request, res: Response) {
@@ -87,7 +86,13 @@ export async function getUser(req: Request, res: Response) {
 export async function createUser(req: Request, res: Response) {
   const actor = requireAuth(req);
   const input = adminCreateUserSchema.parse(req.body);
-  return sendCreated(res, await userService.createAdminUser(input, actor.id, req));
+  return sendCreated(res, await userService.createOfficerUser(input, actor.id, req));
+}
+
+export async function createAdmin(req: Request, res: Response) {
+  const actor = requireAuth(req);
+  const input = adminCreateAdminSchema.parse(req.body);
+  return sendCreated(res, await userService.createAdminAccount(input, actor, req));
 }
 
 export async function updateUser(req: Request, res: Response) {

@@ -20,7 +20,7 @@ import { AdminAuditPage } from "@/pages/admin/AdminAuditPage";
 import { AdminSettingsPage } from "@/pages/admin/AdminSettingsPage";
 import { AdminOfficerDashboardPage } from "@/pages/admin/AdminOfficerDashboardPage";
 import { AdminComparePage } from "@/pages/admin/AdminComparePage";
-import { AdminMePage } from "@/pages/admin/AdminMePage";
+import { AdminAdminsPage } from "@/pages/admin/AdminAdminsPage";
 
 export default function App() {
   return (
@@ -46,7 +46,7 @@ export default function App() {
           <Route element={<ProtectedRoute roles={["ADMIN"]} />}>
             <Route element={<AdminLayout />}>
               <Route path="/admin" element={<AdminDashboardPage />} />
-              <Route path="/admin/me" element={<AdminMePage />} />
+              <Route path="/admin/admins" element={<AdminAdminsPage />} />
               <Route path="/admin/users" element={<AdminUsersPage />} />
               <Route path="/admin/users/:id/dashboard" element={<AdminOfficerDashboardPage />} />
               <Route path="/admin/analytics/compare" element={<AdminComparePage />} />

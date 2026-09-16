@@ -96,11 +96,12 @@ export const adminApi = {
     }>(`/admin/dashboard/compare${toQuery(params)}`),
   officers: () =>
     api<Array<{ id: string; fullName: string; bankId: string; status: string; attended: number }>>("/admin/officers"),
-  selfDashboard: () => api<OfficerDashboard>("/admin/me/dashboard"),
   userDashboard: (id: string) => api<OfficerDashboard>(`/admin/users/${id}/dashboard`),
   users: (params: FilterParams = {}) => api<Paginated<PublicUser>>(`/admin/users${toQuery(params)}`),
+  admins: (params: FilterParams = {}) => api<Paginated<PublicUser>>(`/admin/admins${toQuery(params)}`),
   user: (id: string) => api<PublicUser>(`/admin/users/${id}`),
   createUser: (payload: unknown) => api<PublicUser>("/admin/users", { method: "POST", body: JSON.stringify(payload) }),
+  createAdmin: (payload: unknown) => api<PublicUser>("/admin/admins", { method: "POST", body: JSON.stringify(payload) }),
   updateUser: (id: string, payload: unknown) =>
     api<PublicUser>(`/admin/users/${id}`, { method: "PATCH", body: JSON.stringify(payload) }),
   approveUser: (id: string) => api<PublicUser>(`/admin/users/${id}/approve`, { method: "POST" }),

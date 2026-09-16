@@ -11,6 +11,7 @@ const envSchema = z.object({
     .enum(["true", "false"])
     .default("false")
     .transform((value) => value === "true"),
+  /** Super admin Bank ID (seeded login). Defaults to ADMIN001 when unset. */
   ADMIN_BANK_ID: z.string().optional(),
   ADMIN_NAME: z.string().optional(),
   ADMIN_PASSWORD: z.string().optional(),

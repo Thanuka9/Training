@@ -61,7 +61,7 @@ export function AdminUsersPage() {
     <div>
       <PageHeader
         title="Users"
-        description="Approve registrations, see how many trainings each officer has attended (officers may attend multiple programmes in a year), and export the full list. Admins are created as separate accounts — officers are not promoted."
+        description="Approve registrations, see how many trainings each officer has attended (officers may attend multiple programmes in a year), and export the full list. Admin accounts are managed separately by the super administrator."
         actions={
           <div className="flex flex-wrap gap-2">
             <DownloadButtons
@@ -73,7 +73,7 @@ export function AdminUsersPage() {
                 neverAttended: params.get("neverAttended") ?? "",
               }}
             />
-            <Button onClick={() => setCreateOpen(true)}>Add user</Button>
+            <Button onClick={() => setCreateOpen(true)}>Add officer</Button>
           </div>
         }
       />
@@ -194,7 +194,7 @@ export function AdminUsersPage() {
                           <button className="text-red-700 underline" onClick={() => setConfirm({ id: user.id, action: "reject", title: "Reject this registration?", danger: true })}>Reject</button>
                         </>
                       ) : null}
-                      {user.status === "ACTIVE" ? (
+                      {user.status === "ACTIVE" && !user.isSuperAdmin ? (
                         <button className="text-red-700 underline" onClick={() => setConfirm({ id: user.id, action: "disable", title: "Disable this account?", danger: true })}>Disable</button>
                       ) : null}
                       {user.status === "DISABLED" ? (
@@ -277,18 +277,16 @@ function CreateUserModal({
   const [fullName, setFullName] = useState("");
   const [bankId, setBankId] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState<"USER" | "ADMIN">("USER");
   const [padDialog, setPadDialog] = useState<{ before: string; after: string; resumeSubmit: boolean } | null>(null);
   const acknowledgedPadRef = useRef<string | null>(null);
 
   async function createUser(normalizedBankId: string) {
     try {
-      await adminApi.createUser({ fullName, bankId: normalizedBankId, password, role, status: "ACTIVE" });
-      toast.success(role === "ADMIN" ? "Admin account created" : "User created as active");
+      await adminApi.createUser({ fullName, bankId: normalizedBankId, password, status: "ACTIVE" });
+      toast.success("Officer created as active");
       setFullName("");
       setBankId("");
       setPassword("");
-      setRole("USER");
       acknowledgedPadRef.current = null;
       await onCreated();
     } catch (error) {
@@ -298,7 +296,7 @@ function CreateUserModal({
 
   return (
     <>
-      <Modal open={open} title="Add user" onClose={onClose}>
+      <Modal open={open} title="Add officer" onClose={onClose}>
         <form
           className="space-y-3"
           onSubmit={async (event) => {
@@ -342,16 +340,6 @@ function CreateUserModal({
             />
             <p className="mt-1 text-xs text-muted">
               Min. 4 characters; shorter IDs are padded with leading zeros. Bank ID is the login username.
-            </p>
-          </div>
-          <div>
-            <Label>Role</Label>
-            <Select value={role} onChange={(e) => setRole(e.target.value as "USER" | "ADMIN")}>
-              <option value="USER">USER (officer)</option>
-              <option value="ADMIN">ADMIN (separate admin account)</option>
-            </Select>
-            <p className="mt-1 text-xs text-muted">
-              Defaults to officer. Choose ADMIN only to create a separate administrator with their own Bank ID and password — do not convert existing officers.
             </p>
           </div>
           <div>

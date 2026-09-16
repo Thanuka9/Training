@@ -2,15 +2,22 @@ import type { Prisma } from "@prisma/client";
 import type { Role, UserStatus } from "../types/domain.js";
 import type { Request } from "express";
 import { prisma } from "../config/prisma.js";
-import { conflict, notFound, validationError } from "../utils/appError.js";
+import { conflict, forbidden, notFound, validationError } from "../utils/appError.js";
 import { parsePagination, paginatedResult } from "../utils/pagination.js";
 import { hashPassword } from "../utils/password.js";
 import { toPublicUser } from "../utils/serialize.js";
 import { writeAuditLog } from "../utils/audit.js";
 import { normalizeBankId } from "../utils/bankId.js";
+import { isSuperAdminBankId } from "../utils/superAdmin.js";
 
 async function countActiveAdmins() {
   return prisma.user.count({ where: { role: "ADMIN", status: "ACTIVE" } });
+}
+
+function assertNotSuperAdminMutation(bankId: string, action: string) {
+  if (isSuperAdminBankId(bankId)) {
+    throw validationError(`The super administrator account cannot be ${action}`);
+  }
 }
 
 async function protectLastAdmin(targetId: string, nextRole?: Role, nextStatus?: UserStatus) {
@@ -21,6 +28,8 @@ async function protectLastAdmin(targetId: string, nextRole?: Role, nextStatus?: 
   const becomingNonAdmin = nextRole === "USER";
   const becomingInactive = nextStatus && nextStatus !== "ACTIVE";
   if (!becomingNonAdmin && !becomingInactive) return target;
+
+  assertNotSuperAdminMutation(target.bankId, becomingNonAdmin ? "demoted" : "disabled");
 
   if ((await countActiveAdmins()) <= 1) {
     throw validationError("The last active administrator cannot be disabled or demoted");
@@ -159,18 +168,21 @@ export async function getUser(id: string) {
   return withStats(toPublicUser(user), stats);
 }
 
-export async function createAdminUser(
+/** Create an officer (USER) account — never ADMIN. */
+export async function createOfficerUser(
   input: {
     fullName: string;
     bankId: string;
     password: string;
-    role?: Role;
     status?: UserStatus;
   },
   actorUserId: string,
   req: Request,
 ) {
   const bankId = normalizeBankId(input.bankId);
+  if (isSuperAdminBankId(bankId)) {
+    throw validationError("This Bank ID is reserved for the super administrator");
+  }
   const existing = await prisma.user.findUnique({ where: { bankId } });
   if (existing) throw conflict("A user with this Bank ID already exists");
 
@@ -179,7 +191,7 @@ export async function createAdminUser(
       fullName: input.fullName,
       bankId,
       passwordHash: await hashPassword(input.password),
-      role: input.role ?? "USER",
+      role: "USER",
       status: input.status ?? "ACTIVE",
     },
   });
@@ -196,6 +208,67 @@ export async function createAdminUser(
   return toPublicUser(created);
 }
 
+/** @deprecated use createOfficerUser — kept name alias for callers */
+export async function createAdminUser(
+  input: {
+    fullName: string;
+    bankId: string;
+    password: string;
+    role?: Role;
+    status?: UserStatus;
+  },
+  actorUserId: string,
+  req: Request,
+) {
+  if (input.role === "ADMIN") {
+    throw forbidden("Admin accounts can only be created by the super administrator from Admins");
+  }
+  return createOfficerUser(input, actorUserId, req);
+}
+
+export async function listAdmins(query: Record<string, unknown>) {
+  return listUsers({ ...query, role: "ADMIN" });
+}
+
+/** Super-admin only: create a separate ADMIN account (not promote an officer). */
+export async function createAdminAccount(
+  input: { fullName: string; bankId: string; password: string },
+  actor: { id: string; bankId: string },
+  req: Request,
+) {
+  if (!isSuperAdminBankId(actor.bankId)) {
+    throw forbidden("Only the super administrator can create admin accounts");
+  }
+
+  const bankId = normalizeBankId(input.bankId);
+  if (isSuperAdminBankId(bankId)) {
+    throw validationError("This Bank ID is reserved for the super administrator");
+  }
+  const existing = await prisma.user.findUnique({ where: { bankId } });
+  if (existing) throw conflict("A user with this Bank ID already exists");
+
+  const created = await prisma.user.create({
+    data: {
+      fullName: input.fullName,
+      bankId,
+      passwordHash: await hashPassword(input.password),
+      role: "ADMIN",
+      status: "ACTIVE",
+    },
+  });
+
+  await writeAuditLog({
+    actorUserId: actor.id,
+    action: "ADMIN_CREATED",
+    entityType: "User",
+    entityId: created.id,
+    after: toPublicUser(created),
+    req,
+  });
+
+  return toPublicUser(created);
+}
+
 export async function updateAdminUser(
   id: string,
   input: { fullName?: string; role?: Role; password?: string },
@@ -203,6 +276,15 @@ export async function updateAdminUser(
   req: Request,
 ) {
   const existing = await protectLastAdmin(id, input.role);
+  assertNotSuperAdminMutation(existing.bankId, "modified in this way");
+
+  if (input.role === "ADMIN" && existing.role !== "ADMIN") {
+    throw forbidden("Officers cannot be promoted to admin — create a separate admin account instead");
+  }
+  if (input.role === "USER" && existing.role === "ADMIN") {
+    assertNotSuperAdminMutation(existing.bankId, "demoted");
+  }
+
   const updated = await prisma.user.update({
     where: { id },
     data: {
@@ -214,7 +296,7 @@ export async function updateAdminUser(
 
   await writeAuditLog({
     actorUserId,
-    action: input.role === "ADMIN" && existing.role !== "ADMIN" ? "USER_PROMOTED" : "USER_UPDATED",
+    action: "USER_UPDATED",
     entityType: "User",
     entityId: id,
     before: toPublicUser(existing),

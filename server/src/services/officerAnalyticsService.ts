@@ -67,14 +67,6 @@ export async function getAdminOfficerDashboard(userId: string) {
   return buildPersonalTrainingDashboard(userId);
 }
 
-/** Signed-in admin's own attendance stats (admins are separate accounts, not promoted officers). */
-export async function getAdminSelfDashboard(adminUserId: string) {
-  const user = await prisma.user.findUnique({ where: { id: adminUserId } });
-  if (!user) throw notFound("User");
-  if (user.role !== "ADMIN") throw validationError("Self dashboard is only available for ADMIN accounts");
-  return buildPersonalTrainingDashboard(adminUserId);
-}
-
 export async function getOfficerRankings(query: Record<string, unknown>) {
   const { where, fromYear, toYear } = participationFilters(query);
   const sortBy = String(query.sortBy ?? "total");

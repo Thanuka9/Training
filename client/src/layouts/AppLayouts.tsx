@@ -10,6 +10,7 @@ import {
   LogOut,
   ScrollText,
   Settings,
+  Shield,
   UserRound,
   Users,
 } from "lucide-react";
@@ -18,10 +19,18 @@ import { BrandMark } from "@/components/BrandMark";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-const adminLinks = [
+type AdminNavLink = {
+  to: string;
+  label: string;
+  icon: typeof LayoutDashboard;
+  end?: boolean;
+  superOnly?: boolean;
+};
+
+const adminLinksBase: AdminNavLink[] = [
   { to: "/admin", label: "Dashboard", icon: LayoutDashboard, end: true },
-  { to: "/admin/me", label: "My dashboard", icon: UserRound },
   { to: "/admin/users", label: "Users", icon: Users },
+  { to: "/admin/admins", label: "Admins", icon: Shield, superOnly: true },
   { to: "/admin/analytics/compare", label: "Compare", icon: GitCompare },
   { to: "/admin/training-programs", label: "Training Programs", icon: BookOpen },
   { to: "/admin/records", label: "Participation Records", icon: ClipboardList },
@@ -41,6 +50,11 @@ const userLinks = [
 function TopBar({ home }: { home: string }) {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const roleLabel = user?.isSuperAdmin
+    ? "Super administrator"
+    : user?.role === "ADMIN"
+      ? "Administrator"
+      : "Officer";
 
   return (
     <header className="border-b-2 border-gold bg-navy text-white">
@@ -50,7 +64,9 @@ function TopBar({ home }: { home: string }) {
           {user ? (
             <div className="hidden text-right sm:block">
               <p className="text-sm font-medium leading-tight">{user.fullName}</p>
-              <p className="text-xs text-white/70">Bank ID: {user.bankId} · {user.role === "ADMIN" ? "Administrator" : "Officer"}</p>
+              <p className="text-xs text-white/70">
+                Bank ID: {user.bankId} · {roleLabel}
+              </p>
             </div>
           ) : null}
           <Button
@@ -101,6 +117,9 @@ function NavItems({
 }
 
 export function AdminLayout() {
+  const { user } = useAuth();
+  const adminLinks = adminLinksBase.filter((link) => !link.superOnly || user?.isSuperAdmin);
+
   return (
     <div className="min-h-svh bg-paper">
       <TopBar home="/admin" />

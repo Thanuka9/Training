@@ -8,12 +8,18 @@ const bankIdField = z
   .max(50)
   .transform((value) => normalizeBankId(value));
 
+/** Officers only — ADMIN accounts are created via adminCreateAdminSchema. */
 export const adminCreateUserSchema = z.object({
   fullName: z.string().trim().min(2).max(150),
   bankId: bankIdField,
   password: z.string().min(8).max(200),
-  role: z.enum(["USER", "ADMIN"]).default("USER"),
   status: z.enum(["PENDING", "ACTIVE", "DISABLED", "REJECTED"]).default("ACTIVE"),
+});
+
+export const adminCreateAdminSchema = z.object({
+  fullName: z.string().trim().min(2).max(150),
+  bankId: bankIdField,
+  password: z.string().min(8).max(200),
 });
 
 export const adminUpdateUserSchema = z.object({

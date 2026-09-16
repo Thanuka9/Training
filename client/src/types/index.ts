@@ -13,6 +13,7 @@ export type PublicUser = {
   lastLoginAt: string | null;
   createdAt: string;
   updatedAt: string;
+  isSuperAdmin?: boolean;
   trainingCount?: number;
   attended?: number;
   drafts?: number;
