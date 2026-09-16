@@ -670,6 +670,31 @@ export async function ensureExtraDemoOfficers(client?: ReturnType<typeof createJ
       });
     }
   }
+
+  // Prior-year demo so Admin Dashboard year filter shows a clear change vs 2026.
+  const kasun = await db.user.findUnique({ where: { bankId: "1003" } });
+  if (kasun && secondProgram && participant && completed) {
+    const existing = await db.trainingParticipation.findFirst({
+      where: { userId: kasun.id, trainingProgramId: secondProgram.id },
+    });
+    if (!existing) {
+      await db.trainingParticipation.create({
+        data: {
+          userId: kasun.id,
+          trainingProgramId: secondProgram.id,
+          deliveryMode: "ONLINE",
+          participationRoleId: participant.id,
+          fromDate: new Date("2025-11-03"),
+          toDate: new Date("2025-11-04"),
+          completionStatusId: completed.id,
+          remarks: "Prior-year seed for dashboard year filter",
+          workflowStatus: "APPROVED",
+          submittedAt: new Date("2025-11-05"),
+          approvedAt: new Date("2025-11-06"),
+        },
+      });
+    }
+  }
 }
 
 export function reloadJsonStore() {

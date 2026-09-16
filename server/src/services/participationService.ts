@@ -393,6 +393,30 @@ export async function submitUserParticipation(userId: string, id: string, req: R
 
 export function buildAdminParticipationWhere(query: Record<string, unknown>) {
   const search = typeof query.search === "string" ? query.search.trim() : "";
+  const programFilter: Prisma.TrainingProgramWhereInput = {
+    ...(query.locationScope ? { locationScope: query.locationScope as "LOCAL" | "FOREIGN" } : {}),
+    ...(query.trainingTypeId ? { trainingTypeId: String(query.trainingTypeId) } : {}),
+    ...(query.institutionId ? { institutionId: String(query.institutionId) } : {}),
+  };
+  const hasProgramFilter = Object.keys(programFilter).length > 0;
+
+  const year = query.year ? Number(query.year) : NaN;
+  const hasYear = Number.isFinite(year) && year > 1900;
+  const fromDateFilter: Prisma.DateTimeFilter | undefined =
+    hasYear || query.from || query.to
+      ? {
+          ...(hasYear
+            ? {
+                gte: new Date(Date.UTC(year, 0, 1)),
+                lt: new Date(Date.UTC(year + 1, 0, 1)),
+              }
+            : {
+                ...(query.from ? { gte: parseDate(String(query.from), "From") } : {}),
+                ...(query.to ? { lte: parseDate(String(query.to), "To") } : {}),
+              }),
+        }
+      : undefined;
+
   const where: Prisma.TrainingParticipationWhereInput = {
     ...(query.workflowStatus ? { workflowStatus: query.workflowStatus as WorkflowStatus } : {}),
     ...(query.deliveryMode ? { deliveryMode: query.deliveryMode as DeliveryMode } : {}),
@@ -402,29 +426,8 @@ export function buildAdminParticipationWhere(query: Record<string, unknown>) {
     ...(query.userId ? { userId: String(query.userId) } : {}),
     ...(query.bankId ? { user: { bankId: { contains: String(query.bankId) } } } : {}),
     ...(query.officer ? { user: { fullName: { contains: String(query.officer) } } } : {}),
-    ...(query.locationScope
-      ? { trainingProgram: { locationScope: query.locationScope as "LOCAL" | "FOREIGN" } }
-      : {}),
-    ...(query.trainingTypeId
-      ? { trainingProgram: { trainingTypeId: String(query.trainingTypeId) } }
-      : {}),
-    ...(query.institutionId ? { trainingProgram: { institutionId: String(query.institutionId) } } : {}),
-    ...(query.from || query.to
-      ? {
-          fromDate: {
-            ...(query.from ? { gte: parseDate(String(query.from), "From") } : {}),
-            ...(query.to ? { lte: parseDate(String(query.to), "To") } : {}),
-          },
-        }
-      : {}),
-    ...(query.year
-      ? {
-          fromDate: {
-            gte: new Date(`${query.year}-01-01T00:00:00.000Z`),
-            lte: new Date(`${query.year}-12-31T00:00:00.000Z`),
-          },
-        }
-      : {}),
+    ...(hasProgramFilter ? { trainingProgram: programFilter } : {}),
+    ...(fromDateFilter ? { fromDate: fromDateFilter } : {}),
     ...(search
       ? {
           OR: [

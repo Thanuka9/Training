@@ -6,10 +6,12 @@ import { DownloadButtons } from "@/components/DownloadButtons";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select } from "@/components/ui/select";
 import { Table, THead, Th, Td } from "@/components/ui/table";
 import { deliveryLabel, locationLabel } from "@/lib/format";
+
+const YEAR_OPTIONS = ["2022", "2023", "2024", "2025", "2026"];
 
 const registerColumns = [
   { key: "no", label: "No." },
@@ -99,8 +101,19 @@ export function AdminReportsPage() {
         <CardContent className="flex flex-wrap items-end gap-3 pt-4">
           <div>
             <Label>Year</Label>
-            <Input type="number" value={year} onChange={(e) => setYear(e.target.value)} className="w-32" />
+            <Select value={year} onChange={(e) => setYear(e.target.value)} className="w-32">
+              {YEAR_OPTIONS.map((item) => (
+                <option key={item} value={item}>
+                  {item}
+                </option>
+              ))}
+            </Select>
           </div>
+          {register.isFetching || activity.isFetching || officer.isFetching || program.isFetching || institution.isFetching ? (
+            <span className="pb-2 text-xs text-slate-500">Refreshing…</span>
+          ) : (
+            <span className="pb-2 text-xs text-slate-500">Year {year}</span>
+          )}
           {(
             [
               ["register", "Training Register"],

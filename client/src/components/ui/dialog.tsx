@@ -1,4 +1,5 @@
-import { useEffect, useRef, type ReactNode } from "react";
+import { useEffect, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 import { Button } from "./button";
 
 type ConfirmDialogProps = {
@@ -11,6 +12,55 @@ type ConfirmDialogProps = {
   onClose: () => void;
 };
 
+function Overlay({
+  open,
+  onClose,
+  children,
+  wide,
+}: {
+  open: boolean;
+  onClose: () => void;
+  children: ReactNode;
+  wide?: boolean;
+}) {
+  useEffect(() => {
+    if (!open) return;
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = previous;
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [open, onClose]);
+
+  if (!open || typeof document === "undefined") return null;
+
+  return createPortal(
+    <div
+      className="fixed inset-0 z-[100] flex items-center justify-center p-4"
+      role="presentation"
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget) onClose();
+      }}
+    >
+      <div className="absolute inset-0 bg-slate-900/45" aria-hidden="true" />
+      <div
+        role="dialog"
+        aria-modal="true"
+        className={`relative z-[101] w-full ${wide ? "max-w-lg" : "max-w-md"} max-h-[min(88svh,720px)] overflow-y-auto rounded-lg border border-slate-200 bg-white shadow-xl`}
+        onMouseDown={(event) => event.stopPropagation()}
+      >
+        {children}
+      </div>
+    </div>,
+    document.body,
+  );
+}
+
 export function ConfirmDialog({
   open,
   title,
@@ -20,24 +70,11 @@ export function ConfirmDialog({
   onConfirm,
   onClose,
 }: ConfirmDialogProps) {
-  const ref = useRef<HTMLDialogElement>(null);
-
-  useEffect(() => {
-    const node = ref.current;
-    if (!node) return;
-    if (open && !node.open) node.showModal();
-    if (!open && node.open) node.close();
-  }, [open]);
-
   return (
-    <dialog
-      ref={ref}
-      className="w-full max-w-md rounded-lg border border-slate-200 p-0 shadow-xl backdrop:bg-slate-900/40"
-      onClose={onClose}
-    >
+    <Overlay open={open} onClose={onClose}>
       <div className="p-5">
-        <h3 className="text-lg font-semibold text-navy">{title}</h3>
-        <p className="mt-2 text-sm text-slate-600">{description}</p>
+        <h3 className="font-serif text-lg font-semibold text-navy">{title}</h3>
+        <p className="mt-2 text-sm leading-relaxed text-slate-600">{description}</p>
         <div className="mt-5 flex justify-end gap-2">
           <Button variant="secondary" onClick={onClose}>
             Cancel
@@ -47,7 +84,7 @@ export function ConfirmDialog({
           </Button>
         </div>
       </div>
-    </dialog>
+    </Overlay>
   );
 }
 
@@ -62,24 +99,20 @@ export function Modal({
   children: ReactNode;
   onClose: () => void;
 }) {
-  const ref = useRef<HTMLDialogElement>(null);
-  useEffect(() => {
-    const node = ref.current;
-    if (!node) return;
-    if (open && !node.open) node.showModal();
-    if (!open && node.open) node.close();
-  }, [open]);
-
   return (
-    <dialog
-      ref={ref}
-      className="w-full max-w-lg rounded-lg border border-slate-200 p-0 shadow-xl backdrop:bg-slate-900/40"
-      onClose={onClose}
-    >
-      <div className="border-b border-slate-100 px-5 py-3">
-        <h3 className="text-lg font-semibold text-navy">{title}</h3>
+    <Overlay open={open} onClose={onClose} wide>
+      <div className="sticky top-0 z-10 flex items-center justify-between border-b border-slate-100 bg-white px-5 py-3">
+        <h3 className="font-serif text-lg font-semibold text-navy">{title}</h3>
+        <button
+          type="button"
+          className="rounded px-2 py-1 text-sm text-slate-500 hover:bg-slate-100 hover:text-navy"
+          onClick={onClose}
+          aria-label="Close"
+        >
+          Close
+        </button>
       </div>
       <div className="p-5">{children}</div>
-    </dialog>
+    </Overlay>
   );
 }
