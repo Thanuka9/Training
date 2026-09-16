@@ -55,6 +55,9 @@ async function assertLookups(input: {
   return { program, role, completion };
 }
 
+/** Soft duplicate check: same officer + same programme + same From/To dates.
+ * Officers may attend many different programmes in the same year; that is allowed.
+ * Only an exact programme+date rematch prompts confirmDuplicate. */
 async function findDuplicate(params: {
   userId: string;
   trainingProgramId: string;

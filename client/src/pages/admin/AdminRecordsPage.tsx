@@ -36,11 +36,31 @@ export function AdminRecordsPage() {
         description="Review, correct and decide submitted training records."
         actions={<DownloadButtons report="records" params={filters} />}
       />
+      {params.get("bankId") ? (
+        <div className="mb-4 rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950">
+          Filtered to Bank ID <strong>{params.get("bankId")}</strong>. Officers with no training will show an empty list here.{" "}
+          <Link className="underline" to={`/admin/users?search=${encodeURIComponent(params.get("bankId") ?? "")}`}>
+            Open this officer on Users
+          </Link>
+          {" · "}
+          <button className="underline" onClick={() => setFilter("bankId", "")}>
+            Clear Bank ID filter
+          </button>
+        </div>
+      ) : null}
       <Card className="mb-4">
         <CardContent className="grid gap-3 pt-4 md:grid-cols-4">
           <div className="md:col-span-2">
             <Label>Search</Label>
             <Input defaultValue={params.get("search") ?? ""} placeholder="Officer, Bank ID, programme, institution, venue" onBlur={(e) => setFilter("search", e.target.value)} />
+          </div>
+          <div>
+            <Label>Bank ID</Label>
+            <Input
+              value={params.get("bankId") ?? ""}
+              placeholder="Exact Bank ID filter"
+              onChange={(e) => setFilter("bankId", e.target.value.trim())}
+            />
           </div>
           <div>
             <Label>Workflow</Label>
@@ -98,7 +118,16 @@ export function AdminRecordsPage() {
       </Card>
       <Card>
         <CardContent className="pt-4">
-          <QueryState isLoading={query.isLoading} error={query.error} empty={!query.data?.items.length}>
+          <QueryState
+            isLoading={query.isLoading}
+            error={query.error}
+            empty={!query.data?.items.length}
+            emptyMessage={
+              params.get("bankId")
+                ? `No participation records for Bank ID ${params.get("bankId")}. This officer has not recorded any training yet.`
+                : "No records found."
+            }
+          >
             <Table>
               <THead>
                 <tr>

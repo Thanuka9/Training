@@ -197,7 +197,10 @@ export function AdminDashboardPage() {
             <ul className="space-y-2 text-sm">
               {neverAttended.map((item) => (
                 <li key={item.id} className="flex items-center justify-between gap-3">
-                  <button className="text-left text-navy underline" onClick={() => navigate(`/admin/records?bankId=${item.bankId}`)}>
+                  <button
+                    className="text-left text-navy underline"
+                    onClick={() => navigate(`/admin/users?search=${encodeURIComponent(item.bankId)}&neverAttended=true`)}
+                  >
                     {item.fullName} ({item.bankId})
                   </button>
                   <span className="text-xs text-slate-500">{item.status}</span>

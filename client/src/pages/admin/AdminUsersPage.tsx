@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -24,6 +24,10 @@ export function AdminUsersPage() {
   const [createOpen, setCreateOpen] = useState(false);
   const [confirm, setConfirm] = useState<{ id: string; action: string; title: string; danger?: boolean } | null>(null);
   const [promote, setPromote] = useState<PublicUser | null>(null);
+
+  useEffect(() => {
+    setSearch(params.get("search") ?? "");
+  }, [params]);
 
   const query = useQuery({
     queryKey: ["admin-users", params.toString()],
@@ -58,7 +62,7 @@ export function AdminUsersPage() {
     <div>
       <PageHeader
         title="Users"
-        description="Approve registrations, see how many trainings each officer has attended, and export the full list."
+        description="Approve registrations, see how many trainings each officer has attended (officers may attend multiple programmes in a year), and export the full list."
         actions={
           <div className="flex flex-wrap gap-2">
             <DownloadButtons
@@ -74,6 +78,15 @@ export function AdminUsersPage() {
           </div>
         }
       />
+      {params.get("neverAttended") === "true" ? (
+        <div className="mb-4 rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950">
+          Showing officers who have not submitted any training yet.
+          {params.get("search") ? ` Filtered by “${params.get("search")}”.` : ""}{" "}
+          <button className="underline" onClick={() => setParams({ ...searchParamsRecord(params), neverAttended: "", search: "", page: "1" })}>
+            Clear filter
+          </button>
+        </div>
+      ) : null}
       <Card className="mb-4">
         <CardContent className="flex flex-wrap gap-3 pt-4">
           <Input
@@ -122,7 +135,16 @@ export function AdminUsersPage() {
       </Card>
       <Card>
         <CardContent className="pt-4">
-          <QueryState isLoading={query.isLoading} error={query.error} empty={!query.data?.items.length}>
+          <QueryState
+            isLoading={query.isLoading}
+            error={query.error}
+            empty={!query.data?.items.length}
+            emptyMessage={
+              params.get("neverAttended") === "true"
+                ? "No officers match this filter. Clear Never Attended or search to see more users."
+                : "No users found."
+            }
+          >
             <Table>
               <THead>
                 <tr>
@@ -182,7 +204,12 @@ export function AdminUsersPage() {
                       {user.role === "USER" && user.status === "ACTIVE" ? (
                         <button className="text-navy underline" onClick={() => setPromote(user)}>Promote</button>
                       ) : null}
-                      <Link className="text-navy underline" to={`/admin/records?bankId=${user.bankId}`}>History</Link>
+                      <Link className="text-navy underline" to={`/admin/users?search=${encodeURIComponent(user.bankId)}`}>
+                        Open
+                      </Link>
+                      <Link className="text-navy underline" to={`/admin/records?bankId=${encodeURIComponent(user.bankId)}`}>
+                        History
+                      </Link>
                     </Td>
                   </tr>
                 ))}

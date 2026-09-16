@@ -645,6 +645,31 @@ export async function ensureExtraDemoOfficers(client?: ReturnType<typeof createJ
       });
     }
   }
+
+  // Same officer, second programme in the same year — allowed and counted separately.
+  const thanuka = await db.user.findUnique({ where: { bankId: "9672" } });
+  if (thanuka && thirdProgram && participant && completed) {
+    const existing = await db.trainingParticipation.findFirst({
+      where: { userId: thanuka.id, trainingProgramId: thirdProgram.id },
+    });
+    if (!existing) {
+      await db.trainingParticipation.create({
+        data: {
+          userId: thanuka.id,
+          trainingProgramId: thirdProgram.id,
+          deliveryMode: "PHYSICAL",
+          participationRoleId: participant.id,
+          fromDate: new Date("2026-09-01"),
+          toDate: new Date("2026-09-05"),
+          completionStatusId: completed.id,
+          remarks: "Second programme in the same year (demo)",
+          workflowStatus: "APPROVED",
+          submittedAt: new Date("2026-09-06"),
+          approvedAt: new Date("2026-09-07"),
+        },
+      });
+    }
+  }
 }
 
 export function reloadJsonStore() {
