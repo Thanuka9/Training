@@ -235,18 +235,40 @@ function applyInclude(row: Row, include: Row | undefined): Row {
   return result;
 }
 
-function sortRows(rows: Row[], orderBy: unknown) {
+function resolveOrderValue(row: Row, key: string, directionOrNested: unknown, model: string): unknown {
+  if (directionOrNested && typeof directionOrNested === "object" && !Array.isArray(directionOrNested)) {
+    const relation = relations[key];
+    if (!relation || relation.many) return null;
+    const related = (store[relation.collection] ?? []).find((item) => item.id === row[relation.field]);
+    if (!related) return null;
+    const [nestedKey, nestedDirection] = Object.entries(directionOrNested as Row)[0] ?? [];
+    if (!nestedKey) return null;
+    return resolveOrderValue(related, nestedKey, nestedDirection, relation.collection);
+  }
+  return row[key];
+}
+
+function sortDirectionOf(value: unknown): "asc" | "desc" {
+  if (typeof value === "string") return value.toLowerCase() === "desc" ? "desc" : "asc";
+  if (value && typeof value === "object") {
+    const nested = Object.values(value as Row)[0];
+    return sortDirectionOf(nested);
+  }
+  return "asc";
+}
+
+function sortRows(rows: Row[], orderBy: unknown, model: string) {
   const orders = Array.isArray(orderBy) ? orderBy : orderBy ? [orderBy] : [];
   if (!orders.length) return rows;
   return [...rows].sort((a, b) => {
     for (const order of orders as Row[]) {
-      const [key, direction] = Object.entries(order)[0] ?? [];
+      const [key, directionOrNested] = Object.entries(order)[0] ?? [];
       if (!key) continue;
-      const av = comparable(a[key]);
-      const bv = comparable(b[key]);
+      const av = comparable(resolveOrderValue(a, key, directionOrNested, model));
+      const bv = comparable(resolveOrderValue(b, key, directionOrNested, model));
       if (av === bv) continue;
       const cmp = av == null ? -1 : bv == null ? 1 : av < bv ? -1 : 1;
-      return direction === "desc" ? -cmp : cmp;
+      return sortDirectionOf(directionOrNested) === "desc" ? -cmp : cmp;
     }
     return 0;
   });
@@ -276,6 +298,7 @@ function createDelegate(model: string) {
       const rows = sortRows(
         (store[collection] ?? []).filter((item) => matchWhere(item, args.where, collection)),
         args.orderBy,
+        collection,
       );
       const row = rows[0];
       return row ? applyInclude(row, args.include) : null;
@@ -289,7 +312,7 @@ function createDelegate(model: string) {
       take?: number;
     } = {}) {
       let rows = (store[collection] ?? []).filter((item) => matchWhere(item, args.where, collection));
-      rows = sortRows(rows, args.orderBy);
+      rows = sortRows(rows, args.orderBy, collection);
       if (args.skip) rows = rows.slice(args.skip);
       if (args.take != null) rows = rows.slice(0, args.take);
       return rows.map((row) => {
@@ -520,6 +543,104 @@ export async function seedJsonStore(env: {
           remarks: "Seeded demonstration record",
           workflowStatus: "SUBMITTED",
           submittedAt: new Date(),
+        },
+      });
+    }
+  }
+
+  await ensureExtraDemoOfficers(client, testPassword);
+}
+
+/** Extra officers for attendance demos — safe to call on every JSON boot. */
+export async function ensureExtraDemoOfficers(client?: ReturnType<typeof createJsonClient>, password = "Training9672") {
+  const db = client ?? createJsonClient();
+  const extras = [
+    { bankId: "1001", fullName: "Nimal Perera" },
+    { bankId: "1002", fullName: "Samanthi Jayasuriya" },
+    { bankId: "1003", fullName: "Kasun Fernando" },
+    { bankId: "1004", fullName: "Dilani Wickramasinghe" },
+    { bankId: "1005", fullName: "Ruwan Silva" },
+  ];
+  const hash = await bcrypt.hash(password, 12);
+  for (const officer of extras) {
+    const existing = await db.user.findUnique({ where: { bankId: officer.bankId } });
+    if (existing) continue;
+    await db.user.create({
+      data: {
+        bankId: officer.bankId,
+        fullName: officer.fullName,
+        passwordHash: hash,
+        role: "USER",
+        status: "ACTIVE",
+      },
+    });
+  }
+
+  const pending = await db.user.findUnique({ where: { bankId: "2001" } });
+  if (!pending) {
+    await db.user.create({
+      data: {
+        bankId: "2001",
+        fullName: "Pending Officer Demo",
+        passwordHash: hash,
+        role: "USER",
+        status: "PENDING",
+      },
+    });
+  }
+
+  const secondProgram = await db.trainingProgram.findFirst({
+    where: { name: "Virtual Risk Assessment Seminar" },
+  });
+  const thirdProgram = await db.trainingProgram.findFirst({
+    where: { name: "Advanced Banking Supervision Programme" },
+  });
+  const participant = await db.participationRole.findUnique({ where: { name: "Participant" } });
+  const completed = await db.completionStatus.findUnique({ where: { name: "Completed" } });
+  const ongoing = await db.completionStatus.findUnique({ where: { name: "Ongoing" } });
+  const nimal = await db.user.findUnique({ where: { bankId: "1001" } });
+  const samanthi = await db.user.findUnique({ where: { bankId: "1002" } });
+
+  if (nimal && secondProgram && participant && completed) {
+    const existing = await db.trainingParticipation.findFirst({
+      where: { userId: nimal.id, trainingProgramId: secondProgram.id },
+    });
+    if (!existing) {
+      await db.trainingParticipation.create({
+        data: {
+          userId: nimal.id,
+          trainingProgramId: secondProgram.id,
+          deliveryMode: "ONLINE",
+          participationRoleId: participant.id,
+          fromDate: new Date("2026-05-01"),
+          toDate: new Date("2026-05-02"),
+          completionStatusId: completed.id,
+          remarks: "Seeded online attendance",
+          workflowStatus: "APPROVED",
+          submittedAt: new Date("2026-05-03"),
+          approvedAt: new Date("2026-05-04"),
+        },
+      });
+    }
+  }
+
+  if (samanthi && thirdProgram && participant && ongoing) {
+    const existing = await db.trainingParticipation.findFirst({
+      where: { userId: samanthi.id, trainingProgramId: thirdProgram.id },
+    });
+    if (!existing) {
+      await db.trainingParticipation.create({
+        data: {
+          userId: samanthi.id,
+          trainingProgramId: thirdProgram.id,
+          deliveryMode: "HYBRID",
+          participationRoleId: participant.id,
+          fromDate: new Date("2026-06-10"),
+          toDate: new Date("2026-06-14"),
+          completionStatusId: ongoing.id,
+          remarks: "Seeded foreign hybrid record",
+          workflowStatus: "SUBMITTED",
+          submittedAt: new Date("2026-06-15"),
         },
       });
     }

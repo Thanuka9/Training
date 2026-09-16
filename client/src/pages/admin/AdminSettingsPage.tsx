@@ -2,7 +2,6 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { adminApi } from "@/api/admin";
 import { PageHeader } from "@/components/PageHeader";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export function AdminSettingsPage() {
@@ -34,9 +33,7 @@ export function AdminSettingsPage() {
             />
             Allow Hybrid delivery mode
           </label>
-          <Button variant="secondary" disabled>
-            Saved automatically
-          </Button>
+          <p className="text-xs text-slate-500">Changes save as soon as you toggle the option.</p>
         </CardContent>
       </Card>
     </div>

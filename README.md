@@ -65,20 +65,36 @@ The Vite dev server proxies `/api` to the Express API so the HttpOnly session co
 
 ## Local testing without SQL Server
 
-If SQL Server is not installed or `localhost:1433` is unreachable, the API automatically uses a JSON file store at `server/data/store.json` and seeds demo data on first start.
+The app is finished for local use with a **JSON file store**. SQL Server is the only remaining production step.
+
+If SQL Server is not installed or `localhost:1433` is unreachable, set:
 
 ```env
-DATA_STORE=auto
+DATA_STORE=json
 ```
 
-- `auto` (default in development): try SQL Server, fall back to JSON
-- `json`: always use the file store
+Development defaults to JSON when `DATA_STORE` is omitted. The API writes to `server/data/store.json` and seeds demo data on first start (and adds extra demo officers on later boots if missing).
+
+- `json`: always use the file store (recommended until SQL is ready)
+- `auto`: try SQL Server, fall back to JSON
 - `sqlserver`: require SQL Server and fail if it is down
 
 Check `/api/health` — it reports `"store": "json"` or `"store": "sqlserver"`.
 
-Then sign in as Thanuka Ellepola / Bank ID `9672` / password `Training9672`.
+### Demo accounts (JSON seed)
 
+| Role | Bank ID | Password | Notes |
+|---|---|---|---|
+| Admin | `ADMIN001` | `ChangeMeNow123` | Full admin |
+| Officer | `9672` | `Training9672` | Thanuka Ellepola — has training |
+| Officer | `1001`–`1005` | `Training9672` | Mix of attended / never attended |
+| Pending | `2001` | `Training9672` | Cannot log in until approved |
+
+### Where admin “adds things” for forms
+
+- **Master Data** — dropdown values (types, institutions, roles, completion statuses)
+- **Training Programs** — yellow workbook fields officers select
+- Form **column names** stay fixed to the Excel register (by design)
 
 ## Seeded accounts
 
@@ -145,3 +161,16 @@ PROJECT.md Product specification
 ```
 
 Do not recreate Excel helper sheets (`Names`, formulas, dropdown lists). The database and reports replace them.
+
+## Remaining work (production database only)
+
+Everything else in the Definition of Done is implemented against the JSON store for local/demo use.
+
+To switch to SQL Server later:
+
+1. Install SQL Server and create database `TrainingPortal`
+2. Put real credentials in `server/.env` `DATABASE_URL`
+3. Set `DATA_STORE=sqlserver` (or `auto`)
+4. Run `npm run db:generate`, `npm run db:migrate`, `npm run db:seed`
+5. Confirm `/api/health` shows `"store": "sqlserver"`
+

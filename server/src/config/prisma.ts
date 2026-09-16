@@ -1,6 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import { env } from "./env.js";
-import { createJsonClient, jsonStoreIsEmpty, jsonStorePath, seedJsonStore } from "../db/jsonStore.js";
+import { createJsonClient, ensureExtraDemoOfficers, jsonStoreIsEmpty, jsonStorePath, seedJsonStore } from "../db/jsonStore.js";
 
 export type DataStoreMode = "sqlserver" | "json";
 
@@ -21,21 +21,28 @@ async function connectSqlServer() {
   return sql;
 }
 
+async function bootJsonStore() {
+  dbMode = "json";
+  prisma = createJsonClient() as unknown as PrismaClient;
+  if (jsonStoreIsEmpty()) {
+    await seedJsonStore({
+      adminBankId: env.ADMIN_BANK_ID,
+      adminName: env.ADMIN_NAME,
+      adminPassword: env.ADMIN_PASSWORD,
+      testUserPassword: process.env.TEST_USER_PASSWORD,
+    });
+  } else {
+    await ensureExtraDemoOfficers(undefined, process.env.TEST_USER_PASSWORD);
+  }
+  console.warn(`Using JSON file store at ${jsonStorePath()} (SQL Server can be enabled later with DATA_STORE=sqlserver)`);
+}
+
 export async function initDb() {
-  const requested = env.DATA_STORE ?? (env.NODE_ENV === "production" ? "sqlserver" : "auto");
+  // Local/default: JSON until SQL Server is configured. Production still defaults to sqlserver.
+  const requested = env.DATA_STORE ?? (env.NODE_ENV === "production" ? "sqlserver" : "json");
 
   if (requested === "json") {
-    dbMode = "json";
-    prisma = createJsonClient() as unknown as PrismaClient;
-    if (jsonStoreIsEmpty()) {
-      await seedJsonStore({
-        adminBankId: env.ADMIN_BANK_ID,
-        adminName: env.ADMIN_NAME,
-        adminPassword: env.ADMIN_PASSWORD,
-        testUserPassword: process.env.TEST_USER_PASSWORD,
-      });
-    }
-    console.warn(`SQL Server bypassed. Using JSON file store at ${jsonStorePath()}`);
+    await bootJsonStore();
     return;
   }
 
@@ -56,15 +63,5 @@ export async function initDb() {
     console.warn("DATABASE_URL still has placeholder credentials. Using JSON file store for local testing.");
   }
 
-  dbMode = "json";
-  prisma = createJsonClient() as unknown as PrismaClient;
-  if (jsonStoreIsEmpty()) {
-    await seedJsonStore({
-      adminBankId: env.ADMIN_BANK_ID,
-      adminName: env.ADMIN_NAME,
-      adminPassword: env.ADMIN_PASSWORD,
-      testUserPassword: process.env.TEST_USER_PASSWORD,
-    });
-  }
-  console.warn(`Using JSON file store at ${jsonStorePath()}`);
+  await bootJsonStore();
 }

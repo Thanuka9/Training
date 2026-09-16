@@ -22,6 +22,10 @@ const NAMED: Record<string, string> = {
   RETURNED: "#d97706",
   APPROVED: "#15803d",
   REJECTED: "#be123c",
+  "0 trainings": "#be123c",
+  "1 training": "#b45309",
+  "2 trainings": "#2563eb",
+  "3+ trainings": "#15803d",
 };
 
 const FALLBACK = ["#1b365d", "#b08d57", "#0f766e", "#2563eb", "#b45309", "#7c3aed", "#be123c", "#15803d"];

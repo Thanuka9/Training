@@ -80,13 +80,30 @@ export async function getDashboardSummary(query: Record<string, unknown>) {
     where: { ...submitted, user: { role: "USER" } },
     select: { userId: true },
   });
-  const attendedIds = [...new Set(attendedOfficers.map((item) => item.userId))];
+  const countByOfficer = new Map<string, number>();
+  for (const item of attendedOfficers) {
+    countByOfficer.set(item.userId, (countByOfficer.get(item.userId) ?? 0) + 1);
+  }
+  const attendedIds = [...countByOfficer.keys()];
   const neverAttendedOfficers = await prisma.user.findMany({
     where: attendedIds.length ? { role: "USER", id: { notIn: attendedIds } } : { role: "USER" },
     select: { id: true, fullName: true, bankId: true, status: true },
     orderBy: { fullName: "asc" },
     take: 20,
   });
+
+  let zero = 0;
+  let one = 0;
+  let two = 0;
+  let threePlus = 0;
+  const allOfficers = await prisma.user.findMany({ where: { role: "USER" }, select: { id: true } });
+  for (const officer of allOfficers) {
+    const count = countByOfficer.get(officer.id) ?? 0;
+    if (count === 0) zero += 1;
+    else if (count === 1) one += 1;
+    else if (count === 2) two += 1;
+    else threePlus += 1;
+  }
 
   return {
     kpis: {
@@ -108,6 +125,12 @@ export async function getDashboardSummary(query: Record<string, unknown>) {
       officersWithTraining: attendedIds.length,
       officersNeverAttended: Math.max(totalOfficers - attendedIds.length, 0),
     },
+    attendanceBuckets: [
+      { name: "0 trainings", count: zero },
+      { name: "1 training", count: one },
+      { name: "2 trainings", count: two },
+      { name: "3+ trainings", count: threePlus },
+    ],
     pendingReviewsList: pendingRecords.map((item) => ({
       id: item.id,
       officer: item.user.fullName,

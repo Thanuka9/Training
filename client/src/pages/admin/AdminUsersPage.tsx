@@ -33,7 +33,8 @@ export function AdminUsersPage() {
         status: params.get("status") ?? "",
         role: params.get("role") ?? "",
         neverAttended: params.get("neverAttended") ?? "",
-        pageSize: 50,
+        page: params.get("page") ?? "1",
+        pageSize: 25,
       }),
   });
 
@@ -187,6 +188,29 @@ export function AdminUsersPage() {
                 ))}
               </tbody>
             </Table>
+            <div className="mt-4 flex items-center justify-between text-sm">
+              <span>
+                {query.data?.total} users · page {query.data?.page} of {query.data?.totalPages}
+              </span>
+              <div className="flex gap-2">
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  disabled={(query.data?.page ?? 1) <= 1}
+                  onClick={() => setParams({ ...searchParamsRecord(params), page: String((query.data?.page ?? 1) - 1) })}
+                >
+                  Previous
+                </Button>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  disabled={(query.data?.page ?? 1) >= (query.data?.totalPages ?? 1)}
+                  onClick={() => setParams({ ...searchParamsRecord(params), page: String((query.data?.page ?? 1) + 1) })}
+                >
+                  Next
+                </Button>
+              </div>
+            </div>
           </QueryState>
         </CardContent>
       </Card>

@@ -14,7 +14,10 @@ import type { NamedEntity } from "@/types";
 export function AdminMasterDataPage() {
   return (
     <div className="space-y-6">
-      <PageHeader title="Master Data" description="Controlled lists used by training programmes and participation forms." />
+      <PageHeader
+        title="Master Data"
+        description="Add or archive the dropdown values used on training programmes and the officer participation form (types, institutions, roles, completion statuses). This is how admin extends what officers can choose — form column names stay fixed to the training register."
+      />
       <MasterSection
         title="Training Types"
         queryKey="training-types"

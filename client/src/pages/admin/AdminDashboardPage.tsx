@@ -159,6 +159,15 @@ export function AdminDashboardPage() {
         <ChartCard title="Officers with highest participations">
           <BarBlock data={(officers.data ?? []).map((item) => ({ name: item.name, count: item.count }))} />
         </ChartCard>
+        <ChartCard title="Trainings per officer (coverage)">
+          <BarBlock
+            data={
+              ((summary.data?.attendanceBuckets as Array<{ name: string; count: number }> | undefined) ?? []).map(
+                (item) => ({ name: item.name, count: item.count }),
+              )
+            }
+          />
+        </ChartCard>
       </div>
       <div className="grid gap-4 xl:grid-cols-2">
         <Card>
