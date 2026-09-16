@@ -121,14 +121,9 @@ export function AdminDashboardPage() {
         title="Admin Dashboard"
         description="Department-wide training activity. Drafts are excluded from submitted metrics."
         actions={
-          <div className="flex flex-wrap gap-2">
-            <Link to="/admin/analytics/compare">
-              <Button variant="secondary">Compare officers</Button>
-            </Link>
-            <Link to="/admin/users">
-              <Button variant="secondary">Officer dashboards</Button>
-            </Link>
-          </div>
+          <Link to="/admin/users">
+            <Button variant="secondary">Officer dashboards</Button>
+          </Link>
         }
       />
       <Card>
