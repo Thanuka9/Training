@@ -1,7 +1,24 @@
 import { describe, expect, it } from "vitest";
-import { registerSchema } from "../validators/auth.js";
+import { loginSchema, registerSchema } from "../validators/auth.js";
 import { createParticipationSchema } from "../validators/participation.js";
+import { normalizeBankId } from "../utils/bankId.js";
 import { toCsv } from "../utils/csv.js";
+
+describe("bank id normalization", () => {
+  it("pads short ids with leading zeros to length 4", () => {
+    expect(normalizeBankId("12")).toBe("0012");
+    expect(normalizeBankId("7")).toBe("0007");
+    expect(normalizeBankId("967")).toBe("0967");
+    expect(normalizeBankId(" 12 ")).toBe("0012");
+  });
+
+  it("leaves ids of length 4 or more unchanged after trim", () => {
+    expect(normalizeBankId("9672")).toBe("9672");
+    expect(normalizeBankId("ADMIN001")).toBe("ADMIN001");
+    expect(normalizeBankId("1001")).toBe("1001");
+    expect(normalizeBankId(" B1 ")).toBe("00B1");
+  });
+});
 
 describe("registration validation", () => {
   it("requires matching passwords and a unique-length bank id", () => {
@@ -22,6 +39,21 @@ describe("registration validation", () => {
       confirmPassword: "SecurePass1",
     });
     expect(result.success).toBe(true);
+  });
+
+  it("normalizes short bank ids on register and login", () => {
+    const registered = registerSchema.safeParse({
+      fullName: "Nimal Perera",
+      bankId: "12",
+      password: "SecurePass1",
+      confirmPassword: "SecurePass1",
+    });
+    expect(registered.success).toBe(true);
+    if (registered.success) expect(registered.data.bankId).toBe("0012");
+
+    const loggedIn = loginSchema.safeParse({ bankId: "7", password: "x" });
+    expect(loggedIn.success).toBe(true);
+    if (loggedIn.success) expect(loggedIn.data.bankId).toBe("0007");
   });
 });
 

@@ -1,12 +1,14 @@
-import { useState, type FormEvent } from "react";
+import { useRef, useState, type FormEvent } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useAuth } from "@/features/auth/AuthProvider";
 import { ApiRequestError } from "@/api/client";
+import { ConfirmDialog } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { bankIdNeedsPadding, normalizeBankId } from "@/lib/bankId";
 
 export function LoginPage() {
   const { login } = useAuth();
@@ -16,13 +18,33 @@ export function LoginPage() {
   const [password, setPassword] = useState("");
   const [pending, setPending] = useState(false);
   const [pendingMessage, setPendingMessage] = useState("");
+  const [padDialog, setPadDialog] = useState<{ before: string; after: string; resumeSubmit: boolean } | null>(null);
+  const acknowledgedPadRef = useRef<string | null>(null);
 
-  async function onSubmit(event: FormEvent) {
-    event.preventDefault();
+  function applyBankIdPadding(value: string) {
+    const before = value.trim();
+    const after = normalizeBankId(value);
+    if (!before || before === after) return after;
+    setBankId(after);
+    if (acknowledgedPadRef.current !== after) {
+      setPadDialog({ before, after, resumeSubmit: false });
+    }
+    return after;
+  }
+
+  function onBankIdBlur() {
+    if (bankIdNeedsPadding(bankId)) {
+      applyBankIdPadding(bankId);
+    } else {
+      setBankId(bankId.trim());
+    }
+  }
+
+  async function submitLogin(normalizedBankId: string) {
     setPendingMessage("");
     setPending(true);
     try {
-      const user = await login({ bankId, password });
+      const user = await login({ bankId: normalizedBankId, password });
       const from = (location.state as { from?: string } | null)?.from;
       navigate(from || (user.role === "ADMIN" ? "/admin" : "/app"), { replace: true });
     } catch (error) {
@@ -33,6 +55,30 @@ export function LoginPage() {
       }
     } finally {
       setPending(false);
+    }
+  }
+
+  async function onSubmit(event: FormEvent) {
+    event.preventDefault();
+    const before = bankId.trim();
+    const after = normalizeBankId(bankId);
+    if (before && before !== after && acknowledgedPadRef.current !== after) {
+      setBankId(after);
+      setPadDialog({ before, after, resumeSubmit: true });
+      return;
+    }
+    setBankId(after);
+    await submitLogin(after);
+  }
+
+  function onPadConfirm() {
+    if (!padDialog) return;
+    acknowledgedPadRef.current = padDialog.after;
+    setBankId(padDialog.after);
+    const shouldSubmit = padDialog.resumeSubmit;
+    setPadDialog(null);
+    if (shouldSubmit) {
+      void submitLogin(padDialog.after);
     }
   }
 
@@ -52,7 +98,20 @@ export function LoginPage() {
           <form className="space-y-4" onSubmit={onSubmit}>
             <div>
               <Label htmlFor="bankId">Bank ID</Label>
-              <Input id="bankId" autoComplete="username" value={bankId} onChange={(e) => setBankId(e.target.value)} required />
+              <Input
+                id="bankId"
+                autoComplete="username"
+                value={bankId}
+                onChange={(e) => {
+                  acknowledgedPadRef.current = null;
+                  setBankId(e.target.value);
+                }}
+                onBlur={onBankIdBlur}
+                required
+              />
+              <p className="mt-1 text-xs text-muted">
+                Use at least 4 characters. Shorter IDs are padded with leading zeros (e.g. 12 → 0012).
+              </p>
             </div>
             <div>
               <Label htmlFor="password">Password</Label>
@@ -77,6 +136,19 @@ export function LoginPage() {
           </p>
         </CardContent>
       </Card>
+
+      <ConfirmDialog
+        open={Boolean(padDialog)}
+        title="Bank ID will be padded"
+        description={
+          padDialog
+            ? `Bank IDs are stored as at least 4 characters. Your ID "${padDialog.before}" will be used as "${padDialog.after}".`
+            : ""
+        }
+        confirmLabel="Continue"
+        onConfirm={onPadConfirm}
+        onClose={() => setPadDialog(null)}
+      />
     </main>
   );
 }

@@ -1,9 +1,17 @@
 import { z } from "zod";
+import { normalizeBankId } from "../utils/bankId.js";
+
+const bankIdField = z
+  .string()
+  .trim()
+  .min(1)
+  .max(50)
+  .transform((value) => normalizeBankId(value));
 
 export const registerSchema = z
   .object({
     fullName: z.string().trim().min(2).max(150),
-    bankId: z.string().trim().min(1).max(50),
+    bankId: bankIdField,
     password: z.string().min(8).max(200),
     confirmPassword: z.string().min(8).max(200),
   })
@@ -13,7 +21,7 @@ export const registerSchema = z
   });
 
 export const loginSchema = z.object({
-  bankId: z.string().trim().min(1).max(50),
+  bankId: bankIdField,
   password: z.string().min(1),
 });
 

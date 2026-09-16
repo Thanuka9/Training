@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
 import { Table, THead, Th, Td } from "@/components/ui/table";
+import { bankIdNeedsPadding, normalizeBankId } from "@/lib/bankId";
 import { formatDate, formatDateTime } from "@/lib/format";
 import { searchParamsRecord } from "@/lib/utils";
 import type { PublicUser } from "@/types";
@@ -295,49 +296,105 @@ function CreateUserModal({
   const [bankId, setBankId] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState<"USER" | "ADMIN">("USER");
+  const [padDialog, setPadDialog] = useState<{ before: string; after: string; resumeSubmit: boolean } | null>(null);
+  const acknowledgedPadRef = useRef<string | null>(null);
+
+  async function createUser(normalizedBankId: string) {
+    try {
+      await adminApi.createUser({ fullName, bankId: normalizedBankId, password, role, status: "ACTIVE" });
+      toast.success("User created as active");
+      setFullName("");
+      setBankId("");
+      setPassword("");
+      acknowledgedPadRef.current = null;
+      await onCreated();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Unable to create user");
+    }
+  }
 
   return (
-    <Modal open={open} title="Add user" onClose={onClose}>
-      <form
-        className="space-y-3"
-        onSubmit={async (event) => {
-          event.preventDefault();
-          try {
-            await adminApi.createUser({ fullName, bankId, password, role, status: "ACTIVE" });
-            toast.success("User created as active");
-            setFullName("");
-            setBankId("");
-            setPassword("");
-            await onCreated();
-          } catch (error) {
-            toast.error(error instanceof Error ? error.message : "Unable to create user");
-          }
+    <>
+      <Modal open={open} title="Add user" onClose={onClose}>
+        <form
+          className="space-y-3"
+          onSubmit={async (event) => {
+            event.preventDefault();
+            const before = bankId.trim();
+            const after = normalizeBankId(bankId);
+            if (before && before !== after && acknowledgedPadRef.current !== after) {
+              setBankId(after);
+              setPadDialog({ before, after, resumeSubmit: true });
+              return;
+            }
+            setBankId(after);
+            await createUser(after);
+          }}
+        >
+          <div>
+            <Label>Full Name</Label>
+            <Input value={fullName} onChange={(e) => setFullName(e.target.value)} required />
+          </div>
+          <div>
+            <Label>Bank ID</Label>
+            <Input
+              value={bankId}
+              onChange={(e) => {
+                acknowledgedPadRef.current = null;
+                setBankId(e.target.value);
+              }}
+              onBlur={() => {
+                if (bankIdNeedsPadding(bankId)) {
+                  const before = bankId.trim();
+                  const after = normalizeBankId(bankId);
+                  setBankId(after);
+                  if (acknowledgedPadRef.current !== after) {
+                    setPadDialog({ before, after, resumeSubmit: false });
+                  }
+                } else {
+                  setBankId(bankId.trim());
+                }
+              }}
+              required
+            />
+            <p className="mt-1 text-xs text-muted">Min. 4 characters; shorter IDs are padded with leading zeros.</p>
+          </div>
+          <div>
+            <Label>Role</Label>
+            <Select value={role} onChange={(e) => setRole(e.target.value as "USER" | "ADMIN")}>
+              <option value="USER">USER</option>
+              <option value="ADMIN">ADMIN</option>
+            </Select>
+          </div>
+          <div>
+            <Label>Temporary password</Label>
+            <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={8} />
+          </div>
+          <div className="flex justify-end gap-2">
+            <Button variant="secondary" onClick={onClose}>Cancel</Button>
+            <Button type="submit">Create</Button>
+          </div>
+        </form>
+      </Modal>
+      <ConfirmDialog
+        open={Boolean(padDialog)}
+        title="Bank ID will be padded"
+        description={
+          padDialog
+            ? `Bank IDs are stored as at least 4 characters. This ID "${padDialog.before}" will be saved as "${padDialog.after}".`
+            : ""
+        }
+        confirmLabel="Continue"
+        onConfirm={() => {
+          if (!padDialog) return;
+          acknowledgedPadRef.current = padDialog.after;
+          setBankId(padDialog.after);
+          const shouldSubmit = padDialog.resumeSubmit;
+          setPadDialog(null);
+          if (shouldSubmit) void createUser(padDialog.after);
         }}
-      >
-        <div>
-          <Label>Full Name</Label>
-          <Input value={fullName} onChange={(e) => setFullName(e.target.value)} required />
-        </div>
-        <div>
-          <Label>Bank ID</Label>
-          <Input value={bankId} onChange={(e) => setBankId(e.target.value)} required />
-        </div>
-        <div>
-          <Label>Role</Label>
-          <Select value={role} onChange={(e) => setRole(e.target.value as "USER" | "ADMIN")}>
-            <option value="USER">USER</option>
-            <option value="ADMIN">ADMIN</option>
-          </Select>
-        </div>
-        <div>
-          <Label>Temporary password</Label>
-          <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={8} />
-        </div>
-        <div className="flex justify-end gap-2">
-          <Button variant="secondary" onClick={onClose}>Cancel</Button>
-          <Button type="submit">Create</Button>
-        </div>
-      </form>
-    </Modal>
+        onClose={() => setPadDialog(null)}
+      />
+    </>
   );
 }

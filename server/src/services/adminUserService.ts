@@ -7,6 +7,7 @@ import { parsePagination, paginatedResult } from "../utils/pagination.js";
 import { hashPassword } from "../utils/password.js";
 import { toPublicUser } from "../utils/serialize.js";
 import { writeAuditLog } from "../utils/audit.js";
+import { normalizeBankId } from "../utils/bankId.js";
 
 async function countActiveAdmins() {
   return prisma.user.count({ where: { role: "ADMIN", status: "ACTIVE" } });
@@ -169,13 +170,14 @@ export async function createAdminUser(
   actorUserId: string,
   req: Request,
 ) {
-  const existing = await prisma.user.findUnique({ where: { bankId: input.bankId } });
+  const bankId = normalizeBankId(input.bankId);
+  const existing = await prisma.user.findUnique({ where: { bankId } });
   if (existing) throw conflict("A user with this Bank ID already exists");
 
   const created = await prisma.user.create({
     data: {
       fullName: input.fullName,
-      bankId: input.bankId,
+      bankId,
       passwordHash: await hashPassword(input.password),
       role: input.role ?? "USER",
       status: input.status ?? "ACTIVE",

@@ -1,12 +1,14 @@
-import { useState, type FormEvent } from "react";
+import { useRef, useState, type FormEvent } from "react";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
 import { authApi } from "@/api/auth";
 import { ApiRequestError } from "@/api/client";
+import { ConfirmDialog } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { bankIdNeedsPadding, normalizeBankId } from "@/lib/bankId";
 
 export function RegisterPage() {
   const [fullName, setFullName] = useState("");
@@ -15,18 +17,67 @@ export function RegisterPage() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [pending, setPending] = useState(false);
   const [done, setDone] = useState("");
+  const [padDialog, setPadDialog] = useState<{ before: string; after: string; resumeSubmit: boolean } | null>(null);
+  const acknowledgedPadRef = useRef<string | null>(null);
 
-  async function onSubmit(event: FormEvent) {
-    event.preventDefault();
+  function applyBankIdPadding(value: string) {
+    const before = value.trim();
+    const after = normalizeBankId(value);
+    if (!before || before === after) return after;
+    setBankId(after);
+    if (acknowledgedPadRef.current !== after) {
+      setPadDialog({ before, after, resumeSubmit: false });
+    }
+    return after;
+  }
+
+  function onBankIdBlur() {
+    if (bankIdNeedsPadding(bankId)) {
+      applyBankIdPadding(bankId);
+    } else {
+      setBankId(bankId.trim());
+    }
+  }
+
+  async function submitRegistration(normalizedBankId: string) {
     setPending(true);
     try {
-      const result = await authApi.register({ fullName, bankId, password, confirmPassword });
+      const result = await authApi.register({
+        fullName,
+        bankId: normalizedBankId,
+        password,
+        confirmPassword,
+      });
       setDone(result.message);
       toast.success("Registration submitted");
     } catch (error) {
       toast.error(error instanceof ApiRequestError ? error.message : "Registration failed");
     } finally {
       setPending(false);
+    }
+  }
+
+  async function onSubmit(event: FormEvent) {
+    event.preventDefault();
+    const before = bankId.trim();
+    const after = normalizeBankId(bankId);
+    if (before && before !== after && acknowledgedPadRef.current !== after) {
+      setBankId(after);
+      setPadDialog({ before, after, resumeSubmit: true });
+      return;
+    }
+    setBankId(after);
+    await submitRegistration(after);
+  }
+
+  function onPadConfirm() {
+    if (!padDialog) return;
+    acknowledgedPadRef.current = padDialog.after;
+    setBankId(padDialog.after);
+    const shouldSubmit = padDialog.resumeSubmit;
+    setPadDialog(null);
+    if (shouldSubmit) {
+      void submitRegistration(padDialog.after);
     }
   }
 
@@ -53,8 +104,20 @@ export function RegisterPage() {
               </div>
               <div>
                 <Label htmlFor="bankId">Bank ID</Label>
-                <Input id="bankId" autoComplete="username" value={bankId} onChange={(e) => setBankId(e.target.value)} required />
-                <p className="mt-1 text-xs text-muted">This is your permanent identifier. It cannot be changed later.</p>
+                <Input
+                  id="bankId"
+                  autoComplete="username"
+                  value={bankId}
+                  onChange={(e) => {
+                    acknowledgedPadRef.current = null;
+                    setBankId(e.target.value);
+                  }}
+                  onBlur={onBankIdBlur}
+                  required
+                />
+                <p className="mt-1 text-xs text-muted">
+                  Permanent identifier (min. 4 characters; shorter IDs are padded with leading zeros, e.g. 12 → 0012). Cannot be changed later.
+                </p>
               </div>
               <div>
                 <Label htmlFor="password">Password</Label>
@@ -79,6 +142,19 @@ export function RegisterPage() {
           )}
         </CardContent>
       </Card>
+
+      <ConfirmDialog
+        open={Boolean(padDialog)}
+        title="Bank ID will be padded"
+        description={
+          padDialog
+            ? `Bank IDs are stored as at least 4 characters. Your ID "${padDialog.before}" will be saved as "${padDialog.after}".`
+            : ""
+        }
+        confirmLabel="Continue"
+        onConfirm={onPadConfirm}
+        onClose={() => setPadDialog(null)}
+      />
     </main>
   );
 }

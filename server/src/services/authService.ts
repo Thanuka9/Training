@@ -8,9 +8,11 @@ import { AppError, conflict, forbidden, unauthorized, validationError } from "..
 import type { loginSchema, registerSchema, changePasswordSchema } from "../validators/auth.js";
 import type { z } from "zod";
 import type { Role, UserStatus } from "../types/domain.js";
+import { normalizeBankId } from "../utils/bankId.js";
 
 export async function registerUser(input: z.infer<typeof registerSchema>, req: Request) {
-  const existing = await prisma.user.findUnique({ where: { bankId: input.bankId } });
+  const bankId = normalizeBankId(input.bankId);
+  const existing = await prisma.user.findUnique({ where: { bankId } });
   if (existing) {
     throw conflict("A user with this Bank ID already exists");
   }
@@ -18,7 +20,7 @@ export async function registerUser(input: z.infer<typeof registerSchema>, req: R
   const user = await prisma.user.create({
     data: {
       fullName: input.fullName,
-      bankId: input.bankId,
+      bankId,
       passwordHash: await hashPassword(input.password),
       role: "USER",
       status: "PENDING",
@@ -38,7 +40,8 @@ export async function registerUser(input: z.infer<typeof registerSchema>, req: R
 }
 
 export async function loginUser(input: z.infer<typeof loginSchema>, req: Request) {
-  const user = await prisma.user.findUnique({ where: { bankId: input.bankId } });
+  const bankId = normalizeBankId(input.bankId);
+  const user = await prisma.user.findUnique({ where: { bankId } });
   if (!user || !(await verifyPassword(input.password, user.passwordHash))) {
     throw unauthorized("Invalid Bank ID or password");
   }
