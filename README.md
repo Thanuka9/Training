@@ -83,12 +83,16 @@ Check `/api/health` — it reports `"store": "json"` or `"store": "sqlserver"`.
 
 ### Demo accounts (JSON seed)
 
+Login uses **Bank ID as the username** (there is no separate username field). The seeded main admin is `ADMIN001` — do not remove it.
+
 | Role | Bank ID | Password | Notes |
 |---|---|---|---|
-| Admin | `ADMIN001` | `ChangeMeNow123` | Full admin |
+| Admin | `ADMIN001` | `ChangeMeNow123` | Primary / main admin login |
 | Officer | `9672` | `Training9672` | Thanuka Ellepola — has training |
 | Officer | `1001`–`1005` | `Training9672` | Mix of attended / never attended |
 | Pending | `2001` | `Training9672` | Cannot log in until approved |
+
+Admins are **separate accounts** (created with role ADMIN). Officers are not promoted to admin. Officer rankings, never-attended lists, and Compare use USER accounts only.
 
 ### Where admin “adds things” for forms
 
@@ -114,7 +118,10 @@ Self-registered officers start as `PENDING` and cannot log in until an Admin app
 | `/` `/login` `/register` | Public |
 | `/app` | Officer dashboard |
 | `/app/training/new` | Record participation |
-| `/admin` | Admin dashboard |
+| `/admin` | Department admin dashboard |
+| `/admin/me` | Signed-in admin’s personal attendance dashboard |
+| `/admin/analytics/compare` | Compare two officers (sidebar **Compare** only) |
+| `/admin/users` | Users (create USER or ADMIN accounts; no promote-from-officer) |
 | `/admin/training-programs` | Yellow-field programme master |
 | `/admin/records` | Review workflow |
 | `/admin/reports` | Register, officer activity, summaries, Excel/CSV downloads |

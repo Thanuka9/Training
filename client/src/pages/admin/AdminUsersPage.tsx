@@ -16,7 +16,6 @@ import { Table, THead, Th, Td } from "@/components/ui/table";
 import { bankIdNeedsPadding, normalizeBankId } from "@/lib/bankId";
 import { formatDate, formatDateTime } from "@/lib/format";
 import { searchParamsRecord } from "@/lib/utils";
-import type { PublicUser } from "@/types";
 
 export function AdminUsersPage() {
   const queryClient = useQueryClient();
@@ -24,7 +23,6 @@ export function AdminUsersPage() {
   const [search, setSearch] = useState(params.get("search") ?? "");
   const [createOpen, setCreateOpen] = useState(false);
   const [confirm, setConfirm] = useState<{ id: string; action: string; title: string; danger?: boolean } | null>(null);
-  const [promote, setPromote] = useState<PublicUser | null>(null);
 
   useEffect(() => {
     setSearch(params.get("search") ?? "");
@@ -63,12 +61,9 @@ export function AdminUsersPage() {
     <div>
       <PageHeader
         title="Users"
-        description="Approve registrations, see how many trainings each officer has attended (officers may attend multiple programmes in a year), and export the full list."
+        description="Approve registrations, see how many trainings each officer has attended (officers may attend multiple programmes in a year), and export the full list. Admins are created as separate accounts — officers are not promoted."
         actions={
           <div className="flex flex-wrap gap-2">
-            <Link to="/admin/analytics/compare">
-              <Button variant="secondary">Compare officers</Button>
-            </Link>
             <DownloadButtons
               report="users"
               params={{
@@ -205,9 +200,6 @@ export function AdminUsersPage() {
                       {user.status === "DISABLED" ? (
                         <button className="text-navy underline" onClick={() => setConfirm({ id: user.id, action: "reactivate", title: "Reactivate this account?" })}>Reactivate</button>
                       ) : null}
-                      {user.role === "USER" && user.status === "ACTIVE" ? (
-                        <button className="text-navy underline" onClick={() => setPromote(user)}>Promote</button>
-                      ) : null}
                       {user.role === "USER" ? (
                         <Link className="text-navy underline" to={`/admin/users/${user.id}/dashboard`}>
                           Dashboard
@@ -269,24 +261,6 @@ export function AdminUsersPage() {
           setConfirm(null);
         }}
       />
-      <ConfirmDialog
-        open={Boolean(promote)}
-        title="Promote to Admin"
-        description={`Give ${promote?.fullName} administrator access?`}
-        confirmLabel="Promote"
-        onClose={() => setPromote(null)}
-        onConfirm={async () => {
-          if (!promote) return;
-          try {
-            await adminApi.updateUser(promote.id, { role: "ADMIN" });
-            toast.success("User promoted");
-            await queryClient.invalidateQueries({ queryKey: ["admin-users"] });
-          } catch (error) {
-            toast.error(error instanceof Error ? error.message : "Unable to promote user");
-          }
-          setPromote(null);
-        }}
-      />
     </div>
   );
 }
@@ -310,10 +284,11 @@ function CreateUserModal({
   async function createUser(normalizedBankId: string) {
     try {
       await adminApi.createUser({ fullName, bankId: normalizedBankId, password, role, status: "ACTIVE" });
-      toast.success("User created as active");
+      toast.success(role === "ADMIN" ? "Admin account created" : "User created as active");
       setFullName("");
       setBankId("");
       setPassword("");
+      setRole("USER");
       acknowledgedPadRef.current = null;
       await onCreated();
     } catch (error) {
@@ -365,14 +340,19 @@ function CreateUserModal({
               }}
               required
             />
-            <p className="mt-1 text-xs text-muted">Min. 4 characters; shorter IDs are padded with leading zeros.</p>
+            <p className="mt-1 text-xs text-muted">
+              Min. 4 characters; shorter IDs are padded with leading zeros. Bank ID is the login username.
+            </p>
           </div>
           <div>
             <Label>Role</Label>
             <Select value={role} onChange={(e) => setRole(e.target.value as "USER" | "ADMIN")}>
-              <option value="USER">USER</option>
-              <option value="ADMIN">ADMIN</option>
+              <option value="USER">USER (officer)</option>
+              <option value="ADMIN">ADMIN (separate admin account)</option>
             </Select>
+            <p className="mt-1 text-xs text-muted">
+              Defaults to officer. Choose ADMIN only to create a separate administrator with their own Bank ID and password — do not convert existing officers.
+            </p>
           </div>
           <div>
             <Label>Temporary password</Label>

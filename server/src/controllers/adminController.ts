@@ -71,6 +71,11 @@ export async function officerDashboard(req: Request, res: Response) {
   return sendSuccess(res, await officerAnalytics.getAdminOfficerDashboard(req.params.id));
 }
 
+export async function selfDashboard(req: Request, res: Response) {
+  const actor = requireAuth(req);
+  return sendSuccess(res, await officerAnalytics.getAdminSelfDashboard(actor.id));
+}
+
 export async function listUsers(req: Request, res: Response) {
   return sendSuccess(res, await userService.listUsers(req.query));
 }

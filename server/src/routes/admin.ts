@@ -17,6 +17,7 @@ router.get("/dashboard/rankings", asyncHandler(adminController.dashboardRankings
 router.get("/dashboard/yearly", asyncHandler(adminController.dashboardYearly));
 router.get("/dashboard/compare", asyncHandler(adminController.dashboardCompare));
 router.get("/officers", asyncHandler(adminController.listOfficersSelect));
+router.get("/me/dashboard", asyncHandler(adminController.selfDashboard));
 
 router.get("/users", asyncHandler(adminController.listUsers));
 router.post("/users", asyncHandler(adminController.createUser));

@@ -20,6 +20,7 @@ import { cn } from "@/lib/utils";
 
 const adminLinks = [
   { to: "/admin", label: "Dashboard", icon: LayoutDashboard, end: true },
+  { to: "/admin/me", label: "My dashboard", icon: UserRound },
   { to: "/admin/users", label: "Users", icon: Users },
   { to: "/admin/analytics/compare", label: "Compare", icon: GitCompare },
   { to: "/admin/training-programs", label: "Training Programs", icon: BookOpen },

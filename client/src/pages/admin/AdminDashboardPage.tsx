@@ -16,7 +16,6 @@ import {
 import { adminApi } from "@/api/admin";
 import { KpiCard, PageHeader, QueryState } from "@/components/PageHeader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
@@ -25,9 +24,10 @@ import { BarBlock, ChartCard, Donut } from "@/components/Charts";
 import { GOLD_COLOR, LINE_COLOR } from "@/lib/chartColors";
 import { Badge } from "@/components/ui/badge";
 
+const YEAR_OPTIONS = ["2022", "2023", "2024", "2025", "2026"];
+
 export function AdminDashboardPage() {
   const navigate = useNavigate();
-  const [year, setYear] = useState(String(new Date().getFullYear()));
   const [filters, setFilters] = useState<Record<string, string>>({ year: String(new Date().getFullYear()) });
   const [yearlyFilters, setYearlyFilters] = useState({
     fromYear: "2022",
@@ -42,18 +42,57 @@ export function AdminDashboardPage() {
     deliveryMode: "",
     sortBy: "total",
   });
+
+  const applyYear = (year: string) => {
+    setFilters((current) => ({ ...current, year }));
+    setYearlyFilters((current) => ({
+      ...current,
+      fromYear: String(Math.min(Number(current.fromYear) || 2022, Number(year))),
+      toYear: String(Math.max(Number(current.toYear) || Number(year), Number(year))),
+    }));
+    setRankFilters((current) => ({
+      ...current,
+      fromYear: String(Math.min(Number(current.fromYear) || 2022, Number(year))),
+      toYear: String(Math.max(Number(current.toYear) || Number(year), Number(year))),
+    }));
+  };
+
   const lookups = useQuery({ queryKey: ["admin-lookups"], queryFn: adminApi.lookups });
-  const summary = useQuery({ queryKey: ["admin-summary", filters], queryFn: () => adminApi.summary(filters) });
-  const monthly = useQuery({ queryKey: ["admin-monthly", filters], queryFn: () => adminApi.monthly(filters) });
-  const distributions = useQuery({ queryKey: ["admin-dist", filters], queryFn: () => adminApi.distributions(filters) });
-  const institutions = useQuery({ queryKey: ["admin-inst", filters], queryFn: () => adminApi.topInstitutions(filters) });
-  const officers = useQuery({ queryKey: ["admin-officers", filters], queryFn: () => adminApi.topOfficers(filters) });
+  const summary = useQuery({
+    queryKey: ["admin-summary", filters],
+    queryFn: () => adminApi.summary(filters),
+  });
+  const monthly = useQuery({
+    queryKey: ["admin-monthly", filters],
+    queryFn: () => adminApi.monthly(filters),
+  });
+  const distributions = useQuery({
+    queryKey: ["admin-dist", filters],
+    queryFn: () => adminApi.distributions(filters),
+  });
+  const institutions = useQuery({
+    queryKey: ["admin-inst", filters],
+    queryFn: () => adminApi.topInstitutions(filters),
+  });
+  const officers = useQuery({
+    queryKey: ["admin-officers", filters],
+    queryFn: () => adminApi.topOfficers(filters),
+  });
   const yearly = useQuery({ queryKey: ["admin-yearly", yearlyFilters], queryFn: () => adminApi.yearly(yearlyFilters) });
   const rankings = useQuery({ queryKey: ["admin-rankings", rankFilters], queryFn: () => adminApi.rankings(rankFilters) });
+
+  const refreshing =
+    summary.isFetching ||
+    monthly.isFetching ||
+    distributions.isFetching ||
+    institutions.isFetching ||
+    officers.isFetching;
 
   const kpis = (summary.data?.kpis ?? {}) as Record<string, number>;
   const neverAttended =
     (summary.data?.neverAttendedOfficers as Array<{ id: string; fullName: string; bankId: string; status: string }> | undefined) ?? [];
+  const yearScopedEmpty =
+    Boolean(summary.data) && !refreshing && Number(kpis.totalSubmittedRecords ?? 0) === 0;
 
   const cards = useMemo(
     () => [
@@ -62,7 +101,7 @@ export function AdminDashboardPage() {
       ["Officers with training", kpis.officersWithTraining, "/admin/users?neverAttended=false"],
       ["Officers with no training", kpis.officersNeverAttended, "/admin/users?neverAttended=true"],
       ["Total Training Programs", kpis.totalPrograms, "/admin/training-programs"],
-      ["Total Participation Records", kpis.totalSubmittedRecords, "/admin/records"],
+      ["Participation records", kpis.totalSubmittedRecords, "/admin/records"],
       ["Pending Reviews", kpis.pendingReviews, "/admin/records?workflowStatus=SUBMITTED"],
       ["Approved Records", kpis.approvedRecords, "/admin/records?workflowStatus=APPROVED"],
       ["Completed Trainings", kpis.completedTrainings, "/admin/records"],
@@ -96,12 +135,16 @@ export function AdminDashboardPage() {
         <CardContent className="grid gap-3 pt-4 md:grid-cols-4">
           <div>
             <Label>Year</Label>
-            <Input
-              type="number"
-              value={year}
-              onChange={(e) => setYear(e.target.value)}
-              onBlur={() => setFilters((current) => ({ ...current, year }))}
-            />
+            <Select
+              value={filters.year ?? String(new Date().getFullYear())}
+              onChange={(e) => applyYear(e.target.value)}
+            >
+              {YEAR_OPTIONS.map((item) => (
+                <option key={item} value={item}>
+                  {item}
+                </option>
+              ))}
+            </Select>
           </div>
           <div>
             <Label>Local / Foreign</Label>
@@ -140,47 +183,70 @@ export function AdminDashboardPage() {
               ))}
             </Select>
           </div>
-          <div className="md:col-span-4">
+          <div className="flex flex-wrap items-center gap-3 md:col-span-4">
             <Button
               variant="secondary"
               onClick={() => {
-                setYear(String(new Date().getFullYear()));
-                setFilters({ year: String(new Date().getFullYear()) });
+                const currentYear = String(new Date().getFullYear());
+                setFilters({ year: currentYear });
+                setYearlyFilters({ fromYear: "2022", toYear: currentYear, locationScope: "", deliveryMode: "" });
+                setRankFilters({
+                  fromYear: "2022",
+                  toYear: currentYear,
+                  locationScope: "",
+                  deliveryMode: "",
+                  sortBy: "total",
+                });
               }}
             >
               Reset filters
             </Button>
+            {refreshing ? <span className="text-xs text-slate-500">Refreshing charts for {filters.year}…</span> : null}
+            <span className="text-xs text-slate-500">
+              Training KPIs and charts reload for year <strong>{filters.year}</strong>. User / programme totals stay global.
+            </span>
           </div>
         </CardContent>
       </Card>
-      <QueryState isLoading={summary.isLoading} error={summary.error}>
-        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+      {yearScopedEmpty ? (
+        <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950">
+          No participation records found for <strong>{filters.year}</strong>. Charts and training KPIs below show zeros for this year.
+        </div>
+      ) : null}
+      <QueryState isLoading={summary.isLoading && !summary.data} error={summary.error}>
+        <div className={`grid gap-3 sm:grid-cols-2 xl:grid-cols-5 ${refreshing ? "opacity-60 transition-opacity" : ""}`}>
           {cards.map(([label, value, href]) => (
-            <KpiCard key={String(label)} label={String(label)} value={value ?? "—"} onClick={() => navigate(String(href))} />
+            <KpiCard key={`${filters.year}-${String(label)}`} label={String(label)} value={value ?? "—"} onClick={() => navigate(String(href))} />
           ))}
         </div>
         <p className="text-xs text-slate-500">
           Completion rate = Completed / (Completed + Not Completed). Planned and ongoing records are excluded from the denominator.
         </p>
       </QueryState>
-      <div className="grid gap-4 xl:grid-cols-2">
-        <ChartCard title="Training participation by month">
-          <ResponsiveContainer width="100%" height={260}>
-            <LineChart data={monthly.data?.months ?? []}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-              <XAxis dataKey="label" />
-              <YAxis allowDecimals={false} />
-              <Tooltip />
-              <Legend />
-              <Line type="monotone" name="Participations" dataKey="count" stroke={LINE_COLOR} strokeWidth={2} dot={{ r: 3, fill: LINE_COLOR }} />
-            </LineChart>
-          </ResponsiveContainer>
+      <div key={filters.year} className="grid gap-4 xl:grid-cols-2">
+        <ChartCard title={`Training participation by month (${filters.year})`}>
+          <div className={monthly.isFetching ? "opacity-60 transition-opacity" : undefined}>
+            <ResponsiveContainer width="100%" height={260}>
+              <LineChart data={monthly.data?.months ?? []}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                <XAxis dataKey="label" />
+                <YAxis allowDecimals={false} />
+                <Tooltip />
+                <Legend />
+                <Line type="monotone" name="Participations" dataKey="count" stroke={LINE_COLOR} strokeWidth={2} dot={{ r: 3, fill: LINE_COLOR }} />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
         </ChartCard>
-        <ChartCard title="Local vs Foreign">
-          <Donut data={distributions.data?.locationScope ?? []} />
+        <ChartCard title={`Local vs Foreign (${filters.year})`}>
+          <div className={distributions.isFetching ? "opacity-60 transition-opacity" : undefined}>
+            <Donut data={distributions.data?.locationScope ?? []} />
+          </div>
         </ChartCard>
-        <ChartCard title="Physical vs Online vs Hybrid">
-          <Donut data={distributions.data?.deliveryMode ?? []} />
+        <ChartCard title={`Physical vs Online vs Hybrid (${filters.year})`}>
+          <div className={distributions.isFetching ? "opacity-60 transition-opacity" : undefined}>
+            <Donut data={distributions.data?.deliveryMode ?? []} />
+          </div>
         </ChartCard>
         <ChartCard title="Participation role">
           <BarBlock data={distributions.data?.participationRole ?? []} />
@@ -220,7 +286,7 @@ export function AdminDashboardPage() {
                 value={yearlyFilters.fromYear}
                 onChange={(e) => setYearlyFilters((current) => ({ ...current, fromYear: e.target.value }))}
               >
-                {["2022", "2023", "2024", "2025", "2026"].map((item) => (
+                {YEAR_OPTIONS.map((item) => (
                   <option key={item} value={item}>
                     {item}
                   </option>
@@ -233,7 +299,7 @@ export function AdminDashboardPage() {
                 value={yearlyFilters.toYear}
                 onChange={(e) => setYearlyFilters((current) => ({ ...current, toYear: e.target.value }))}
               >
-                {["2022", "2023", "2024", "2025", "2026"].map((item) => (
+                {YEAR_OPTIONS.map((item) => (
                   <option key={item} value={item}>
                     {item}
                   </option>
@@ -293,7 +359,7 @@ export function AdminDashboardPage() {
                 value={rankFilters.fromYear}
                 onChange={(e) => setRankFilters((current) => ({ ...current, fromYear: e.target.value }))}
               >
-                {["2022", "2023", "2024", "2025", "2026"].map((item) => (
+                {YEAR_OPTIONS.map((item) => (
                   <option key={item} value={item}>
                     {item}
                   </option>
@@ -306,7 +372,7 @@ export function AdminDashboardPage() {
                 value={rankFilters.toYear}
                 onChange={(e) => setRankFilters((current) => ({ ...current, toYear: e.target.value }))}
               >
-                {["2022", "2023", "2024", "2025", "2026"].map((item) => (
+                {YEAR_OPTIONS.map((item) => (
                   <option key={item} value={item}>
                     {item}
                   </option>

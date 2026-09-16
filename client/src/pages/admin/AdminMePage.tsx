@@ -1,4 +1,4 @@
-import { Link, useParams } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import {
   Bar,
@@ -20,45 +20,48 @@ import { Table, THead, Th, Td } from "@/components/ui/table";
 import { CompletionBadge, WorkflowBadge } from "@/components/StatusBadge";
 import { LINE_COLOR, GOLD_COLOR } from "@/lib/chartColors";
 import { deliveryLabel, formatDate, locationLabel } from "@/lib/format";
+import { useAuth } from "@/features/auth/AuthProvider";
 
-export function AdminOfficerDashboardPage() {
-  const { id } = useParams();
+export function AdminMePage() {
+  const { user } = useAuth();
   const query = useQuery({
-    queryKey: ["admin-officer-dashboard", id],
-    queryFn: () => adminApi.userDashboard(id!),
-    enabled: Boolean(id),
+    queryKey: ["admin-self-dashboard"],
+    queryFn: adminApi.selfDashboard,
   });
   const data = query.data;
 
   return (
     <div className="space-y-6">
       <PageHeader
-        title={data ? data.user.fullName : "Officer dashboard"}
+        title="My dashboard"
         description={
           data
-            ? `Bank ID ${data.user.bankId} · ${data.user.status}. Same personal stats the officer sees, plus year-wise attendance.`
-            : "Loading officer statistics…"
+            ? `Your personal attendance as ${data.user.fullName} (Bank ID ${data.user.bankId}). Department-wide metrics stay on Dashboard.`
+            : `Signed in as ${user?.fullName ?? "Admin"} · Bank ID ${user?.bankId ?? "—"}.`
         }
         actions={
-          <div className="flex flex-wrap gap-2">
-            {data ? (
-              <Link to={`/admin/records?bankId=${encodeURIComponent(data.user.bankId)}`}>
-                <Button variant="secondary">Training history</Button>
-              </Link>
-            ) : null}
-            <Link to="/admin/users">
-              <Button variant="secondary">Back to users</Button>
-            </Link>
-          </div>
+          <Link to="/admin">
+            <Button variant="secondary">Department dashboard</Button>
+          </Link>
         }
       />
       <QueryState isLoading={query.isLoading} error={query.error} empty={!data}>
         {data ? (
           <>
-            <div className="flex flex-wrap gap-2 text-sm">
-              <Badge tone={data.user.status === "ACTIVE" ? "green" : "amber"}>{data.user.status}</Badge>
-              <Badge tone="navy">{data.kpis.attended} trainings attended</Badge>
-            </div>
+            <Card>
+              <CardHeader>
+                <CardTitle>Account</CardTitle>
+              </CardHeader>
+              <CardContent className="flex flex-wrap gap-3 text-sm">
+                <Badge tone="navy">ADMIN</Badge>
+                <Badge tone={data.user.status === "ACTIVE" ? "green" : "amber"}>{data.user.status}</Badge>
+                <span className="text-slate-700">
+                  <span className="font-medium">{data.user.fullName}</span>
+                  {" · Bank ID "}
+                  {data.user.bankId}
+                </span>
+              </CardContent>
+            </Card>
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
               <KpiCard label="Trainings attended" value={data.kpis.attended} hint="Excludes drafts" />
               <KpiCard label="Completed" value={data.kpis.completed} />
@@ -100,7 +103,11 @@ export function AdminOfficerDashboardPage() {
                 <CardTitle>Recent training records</CardTitle>
               </CardHeader>
               <CardContent>
-                <QueryState isLoading={false} empty={!data.recent.length} emptyMessage="No participation records yet.">
+                <QueryState
+                  isLoading={false}
+                  empty={!data.recent.length}
+                  emptyMessage="No personal participation records yet. Admins are separate accounts; training here is optional."
+                >
                   <Table>
                     <THead>
                       <tr>

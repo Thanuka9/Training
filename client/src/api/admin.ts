@@ -96,6 +96,7 @@ export const adminApi = {
     }>(`/admin/dashboard/compare${toQuery(params)}`),
   officers: () =>
     api<Array<{ id: string; fullName: string; bankId: string; status: string; attended: number }>>("/admin/officers"),
+  selfDashboard: () => api<OfficerDashboard>("/admin/me/dashboard"),
   userDashboard: (id: string) => api<OfficerDashboard>(`/admin/users/${id}/dashboard`),
   users: (params: FilterParams = {}) => api<Paginated<PublicUser>>(`/admin/users${toQuery(params)}`),
   user: (id: string) => api<PublicUser>(`/admin/users/${id}`),

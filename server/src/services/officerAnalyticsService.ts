@@ -32,10 +32,9 @@ function participationFilters(query: Record<string, unknown>) {
   };
 }
 
-export async function getAdminOfficerDashboard(userId: string) {
+async function buildPersonalTrainingDashboard(userId: string) {
   const user = await prisma.user.findUnique({ where: { id: userId } });
   if (!user) throw notFound("User");
-  if (user.role !== "USER") throw validationError("Officer dashboards are only available for USER accounts");
 
   const dashboard = await getUserDashboard(userId);
   const records = await prisma.trainingParticipation.findMany({
@@ -58,6 +57,22 @@ export async function getAdminOfficerDashboard(userId: string) {
     ...dashboard,
     yearly: [...yearMap.values()].sort((a, b) => a.year - b.year),
   };
+}
+
+/** Officer-only dashboard used by admin compare and user list links. */
+export async function getAdminOfficerDashboard(userId: string) {
+  const user = await prisma.user.findUnique({ where: { id: userId } });
+  if (!user) throw notFound("User");
+  if (user.role !== "USER") throw validationError("Officer dashboards are only available for USER accounts");
+  return buildPersonalTrainingDashboard(userId);
+}
+
+/** Signed-in admin's own attendance stats (admins are separate accounts, not promoted officers). */
+export async function getAdminSelfDashboard(adminUserId: string) {
+  const user = await prisma.user.findUnique({ where: { id: adminUserId } });
+  if (!user) throw notFound("User");
+  if (user.role !== "ADMIN") throw validationError("Self dashboard is only available for ADMIN accounts");
+  return buildPersonalTrainingDashboard(adminUserId);
 }
 
 export async function getOfficerRankings(query: Record<string, unknown>) {
