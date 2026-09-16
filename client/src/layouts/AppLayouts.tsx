@@ -4,6 +4,7 @@ import {
   ClipboardList,
   Database,
   FileBarChart,
+  GitCompare,
   GraduationCap,
   LayoutDashboard,
   LogOut,
@@ -20,6 +21,7 @@ import { cn } from "@/lib/utils";
 const adminLinks = [
   { to: "/admin", label: "Dashboard", icon: LayoutDashboard, end: true },
   { to: "/admin/users", label: "Users", icon: Users },
+  { to: "/admin/analytics/compare", label: "Compare", icon: GitCompare },
   { to: "/admin/training-programs", label: "Training Programs", icon: BookOpen },
   { to: "/admin/records", label: "Participation Records", icon: ClipboardList },
   { to: "/admin/master-data", label: "Master Data", icon: Database },

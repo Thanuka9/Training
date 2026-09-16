@@ -1,7 +1,18 @@
 import { useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Legend,
+  Line,
+  LineChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 import { adminApi } from "@/api/admin";
 import { KpiCard, PageHeader, QueryState } from "@/components/PageHeader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,19 +20,36 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
+import { Table, THead, Th, Td } from "@/components/ui/table";
 import { BarBlock, ChartCard, Donut } from "@/components/Charts";
-import { LINE_COLOR } from "@/lib/chartColors";
+import { GOLD_COLOR, LINE_COLOR } from "@/lib/chartColors";
+import { Badge } from "@/components/ui/badge";
 
 export function AdminDashboardPage() {
   const navigate = useNavigate();
   const [year, setYear] = useState(String(new Date().getFullYear()));
   const [filters, setFilters] = useState<Record<string, string>>({ year: String(new Date().getFullYear()) });
+  const [yearlyFilters, setYearlyFilters] = useState({
+    fromYear: "2022",
+    toYear: String(new Date().getFullYear()),
+    locationScope: "",
+    deliveryMode: "",
+  });
+  const [rankFilters, setRankFilters] = useState({
+    fromYear: "2022",
+    toYear: String(new Date().getFullYear()),
+    locationScope: "",
+    deliveryMode: "",
+    sortBy: "total",
+  });
   const lookups = useQuery({ queryKey: ["admin-lookups"], queryFn: adminApi.lookups });
   const summary = useQuery({ queryKey: ["admin-summary", filters], queryFn: () => adminApi.summary(filters) });
   const monthly = useQuery({ queryKey: ["admin-monthly", filters], queryFn: () => adminApi.monthly(filters) });
   const distributions = useQuery({ queryKey: ["admin-dist", filters], queryFn: () => adminApi.distributions(filters) });
   const institutions = useQuery({ queryKey: ["admin-inst", filters], queryFn: () => adminApi.topInstitutions(filters) });
   const officers = useQuery({ queryKey: ["admin-officers", filters], queryFn: () => adminApi.topOfficers(filters) });
+  const yearly = useQuery({ queryKey: ["admin-yearly", yearlyFilters], queryFn: () => adminApi.yearly(yearlyFilters) });
+  const rankings = useQuery({ queryKey: ["admin-rankings", rankFilters], queryFn: () => adminApi.rankings(rankFilters) });
 
   const kpis = (summary.data?.kpis ?? {}) as Record<string, number>;
   const neverAttended =
@@ -53,6 +81,16 @@ export function AdminDashboardPage() {
       <PageHeader
         title="Admin Dashboard"
         description="Department-wide training activity. Drafts are excluded from submitted metrics."
+        actions={
+          <div className="flex flex-wrap gap-2">
+            <Link to="/admin/analytics/compare">
+              <Button variant="secondary">Compare officers</Button>
+            </Link>
+            <Link to="/admin/users">
+              <Button variant="secondary">Officer dashboards</Button>
+            </Link>
+          </div>
+        }
       />
       <Card>
         <CardContent className="grid gap-3 pt-4 md:grid-cols-4">
@@ -169,6 +207,201 @@ export function AdminDashboardPage() {
           />
         </ChartCard>
       </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Year-wise number of trainings</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid gap-3 md:grid-cols-4">
+            <div>
+              <Label>From year</Label>
+              <Select
+                value={yearlyFilters.fromYear}
+                onChange={(e) => setYearlyFilters((current) => ({ ...current, fromYear: e.target.value }))}
+              >
+                {["2022", "2023", "2024", "2025", "2026"].map((item) => (
+                  <option key={item} value={item}>
+                    {item}
+                  </option>
+                ))}
+              </Select>
+            </div>
+            <div>
+              <Label>To year</Label>
+              <Select
+                value={yearlyFilters.toYear}
+                onChange={(e) => setYearlyFilters((current) => ({ ...current, toYear: e.target.value }))}
+              >
+                {["2022", "2023", "2024", "2025", "2026"].map((item) => (
+                  <option key={item} value={item}>
+                    {item}
+                  </option>
+                ))}
+              </Select>
+            </div>
+            <div>
+              <Label>Local / Foreign</Label>
+              <Select
+                value={yearlyFilters.locationScope}
+                onChange={(e) => setYearlyFilters((current) => ({ ...current, locationScope: e.target.value }))}
+              >
+                <option value="">All</option>
+                <option value="LOCAL">Local</option>
+                <option value="FOREIGN">Foreign</option>
+              </Select>
+            </div>
+            <div>
+              <Label>Physical / Online</Label>
+              <Select
+                value={yearlyFilters.deliveryMode}
+                onChange={(e) => setYearlyFilters((current) => ({ ...current, deliveryMode: e.target.value }))}
+              >
+                <option value="">All</option>
+                <option value="PHYSICAL">Physical</option>
+                <option value="ONLINE">Online</option>
+                <option value="HYBRID">Hybrid</option>
+              </Select>
+            </div>
+          </div>
+          <QueryState isLoading={yearly.isLoading} error={yearly.error}>
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={yearly.data?.years ?? []}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                <XAxis dataKey="label" />
+                <YAxis allowDecimals={false} />
+                <Tooltip />
+                <Legend />
+                <Bar dataKey="total" name="Total trainings" fill={LINE_COLOR} />
+                <Bar dataKey="local" name="Local" fill="#0f766e" />
+                <Bar dataKey="foreign" name="Foreign" fill={GOLD_COLOR} />
+              </BarChart>
+            </ResponsiveContainer>
+          </QueryState>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Officer ranking — who has attended most</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid gap-3 md:grid-cols-5">
+            <div>
+              <Label>From year</Label>
+              <Select
+                value={rankFilters.fromYear}
+                onChange={(e) => setRankFilters((current) => ({ ...current, fromYear: e.target.value }))}
+              >
+                {["2022", "2023", "2024", "2025", "2026"].map((item) => (
+                  <option key={item} value={item}>
+                    {item}
+                  </option>
+                ))}
+              </Select>
+            </div>
+            <div>
+              <Label>To year</Label>
+              <Select
+                value={rankFilters.toYear}
+                onChange={(e) => setRankFilters((current) => ({ ...current, toYear: e.target.value }))}
+              >
+                {["2022", "2023", "2024", "2025", "2026"].map((item) => (
+                  <option key={item} value={item}>
+                    {item}
+                  </option>
+                ))}
+              </Select>
+            </div>
+            <div>
+              <Label>Local / Foreign</Label>
+              <Select
+                value={rankFilters.locationScope}
+                onChange={(e) => setRankFilters((current) => ({ ...current, locationScope: e.target.value }))}
+              >
+                <option value="">All</option>
+                <option value="LOCAL">Local</option>
+                <option value="FOREIGN">Foreign</option>
+              </Select>
+            </div>
+            <div>
+              <Label>Physical / Online</Label>
+              <Select
+                value={rankFilters.deliveryMode}
+                onChange={(e) => setRankFilters((current) => ({ ...current, deliveryMode: e.target.value }))}
+              >
+                <option value="">All</option>
+                <option value="PHYSICAL">Physical</option>
+                <option value="ONLINE">Online</option>
+                <option value="HYBRID">Hybrid</option>
+              </Select>
+            </div>
+            <div>
+              <Label>Sort by</Label>
+              <Select
+                value={rankFilters.sortBy}
+                onChange={(e) => setRankFilters((current) => ({ ...current, sortBy: e.target.value }))}
+              >
+                <option value="total">Total</option>
+                <option value="foreign">Foreign</option>
+                <option value="local">Local</option>
+                <option value="physical">Physical</option>
+                <option value="online">Online</option>
+                <option value="hybrid">Hybrid</option>
+                <option value="completed">Completed</option>
+              </Select>
+            </div>
+          </div>
+          <QueryState isLoading={rankings.isLoading} error={rankings.error} empty={!rankings.data?.rows.length}>
+            <Table>
+              <THead>
+                <tr>
+                  <Th>#</Th>
+                  <Th>Officer</Th>
+                  <Th>Bank ID</Th>
+                  <Th>Status</Th>
+                  <Th>Total</Th>
+                  <Th>Local</Th>
+                  <Th>Foreign</Th>
+                  <Th>Physical</Th>
+                  <Th>Online</Th>
+                  <Th>Hybrid</Th>
+                  <Th>Completed</Th>
+                  <Th></Th>
+                </tr>
+              </THead>
+              <tbody>
+                {rankings.data?.rows.map((row, index) => (
+                  <tr key={row.id}>
+                    <Td>{index + 1}</Td>
+                    <Td className="font-medium">{row.officer}</Td>
+                    <Td>{row.bankId}</Td>
+                    <Td>
+                      <Badge tone={row.status === "ACTIVE" ? "green" : "amber"}>{row.status}</Badge>
+                    </Td>
+                    <Td className="font-semibold">{row.total}</Td>
+                    <Td>{row.local}</Td>
+                    <Td>{row.foreign}</Td>
+                    <Td>{row.physical}</Td>
+                    <Td>{row.online}</Td>
+                    <Td>{row.hybrid}</Td>
+                    <Td>{row.completed}</Td>
+                    <Td>
+                      <button
+                        className="text-navy underline"
+                        onClick={() => navigate(`/admin/users/${row.id}/dashboard`)}
+                      >
+                        Dashboard
+                      </button>
+                    </Td>
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
+          </QueryState>
+        </CardContent>
+      </Card>
+
       <div className="grid gap-4 xl:grid-cols-2">
         <Card>
           <CardHeader>

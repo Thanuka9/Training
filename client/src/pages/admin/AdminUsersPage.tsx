@@ -66,6 +66,9 @@ export function AdminUsersPage() {
         description="Approve registrations, see how many trainings each officer has attended (officers may attend multiple programmes in a year), and export the full list."
         actions={
           <div className="flex flex-wrap gap-2">
+            <Link to="/admin/analytics/compare">
+              <Button variant="secondary">Compare officers</Button>
+            </Link>
             <DownloadButtons
               report="users"
               params={{
@@ -204,6 +207,11 @@ export function AdminUsersPage() {
                       ) : null}
                       {user.role === "USER" && user.status === "ACTIVE" ? (
                         <button className="text-navy underline" onClick={() => setPromote(user)}>Promote</button>
+                      ) : null}
+                      {user.role === "USER" ? (
+                        <Link className="text-navy underline" to={`/admin/users/${user.id}/dashboard`}>
+                          Dashboard
+                        </Link>
                       ) : null}
                       <Link className="text-navy underline" to={`/admin/users?search=${encodeURIComponent(user.bankId)}`}>
                         Open

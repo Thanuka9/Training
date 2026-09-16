@@ -13,9 +13,14 @@ router.get("/dashboard/monthly", asyncHandler(adminController.dashboardMonthly))
 router.get("/dashboard/distributions", asyncHandler(adminController.dashboardDistributions));
 router.get("/dashboard/top-institutions", asyncHandler(adminController.dashboardTopInstitutions));
 router.get("/dashboard/top-officers", asyncHandler(adminController.dashboardTopOfficers));
+router.get("/dashboard/rankings", asyncHandler(adminController.dashboardRankings));
+router.get("/dashboard/yearly", asyncHandler(adminController.dashboardYearly));
+router.get("/dashboard/compare", asyncHandler(adminController.dashboardCompare));
+router.get("/officers", asyncHandler(adminController.listOfficersSelect));
 
 router.get("/users", asyncHandler(adminController.listUsers));
 router.post("/users", asyncHandler(adminController.createUser));
+router.get("/users/:id/dashboard", asyncHandler(adminController.officerDashboard));
 router.get("/users/:id", asyncHandler(adminController.getUser));
 router.patch("/users/:id", asyncHandler(adminController.updateUser));
 router.post("/users/:id/approve", asyncHandler(adminController.approveUser));

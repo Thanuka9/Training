@@ -3,6 +3,31 @@ import type { NamedEntity, Paginated, Participation, PublicUser, TrainingProgram
 
 export type FilterParams = Record<string, string | number | boolean | undefined | null>;
 
+export type OfficerDashboard = {
+  user: PublicUser;
+  kpis: {
+    total: number;
+    draft: number;
+    pendingReview: number;
+    approved: number;
+    completed: number;
+    local: number;
+    foreign: number;
+    physical: number;
+    online: number;
+    hybrid: number;
+    attended: number;
+  };
+  distributions: {
+    locationScope: { name: string; count: number }[];
+    deliveryMode: { name: string; count: number }[];
+    completionStatus: { name: string; count: number }[];
+    participationRole: { name: string; count: number }[];
+  };
+  recent: Participation[];
+  yearly: Array<{ year: number; total: number; local: number; foreign: number }>;
+};
+
 export const adminApi = {
   lookups: () =>
     api<{
@@ -26,6 +51,52 @@ export const adminApi = {
     api<{ name: string; count: number }[]>(`/admin/dashboard/top-institutions${toQuery(params)}`),
   topOfficers: (params: FilterParams = {}) =>
     api<{ name: string; bankId: string; count: number }[]>(`/admin/dashboard/top-officers${toQuery(params)}`),
+  rankings: (params: FilterParams = {}) =>
+    api<{
+      fromYear: number;
+      toYear: number;
+      sortBy: string;
+      rows: Array<{
+        id: string;
+        officer: string;
+        bankId: string;
+        status: string;
+        total: number;
+        local: number;
+        foreign: number;
+        physical: number;
+        online: number;
+        hybrid: number;
+        completed: number;
+      }>;
+    }>(`/admin/dashboard/rankings${toQuery(params)}`),
+  yearly: (params: FilterParams = {}) =>
+    api<{
+      fromYear: number;
+      toYear: number;
+      locationScope: string | null;
+      deliveryMode: string | null;
+      years: Array<{ year: number; label: string; total: number; local: number; foreign: number }>;
+    }>(`/admin/dashboard/yearly${toQuery(params)}`),
+  compare: (params: FilterParams = {}) =>
+    api<{
+      a: OfficerDashboard;
+      b: OfficerDashboard;
+      comparisonTable: Array<{ metric: string; label: string; a: number; b: number; diff: number }>;
+      yearlyCompare: Array<{
+        year: number;
+        label: string;
+        aTotal: number;
+        bTotal: number;
+        aLocal: number;
+        bLocal: number;
+        aForeign: number;
+        bForeign: number;
+      }>;
+    }>(`/admin/dashboard/compare${toQuery(params)}`),
+  officers: () =>
+    api<Array<{ id: string; fullName: string; bankId: string; status: string; attended: number }>>("/admin/officers"),
+  userDashboard: (id: string) => api<OfficerDashboard>(`/admin/users/${id}/dashboard`),
   users: (params: FilterParams = {}) => api<Paginated<PublicUser>>(`/admin/users${toQuery(params)}`),
   user: (id: string) => api<PublicUser>(`/admin/users/${id}`),
   createUser: (payload: unknown) => api<PublicUser>("/admin/users", { method: "POST", body: JSON.stringify(payload) }),

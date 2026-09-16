@@ -5,6 +5,7 @@ import * as programService from "../services/trainingProgramService.js";
 import * as userService from "../services/adminUserService.js";
 import * as participationService from "../services/participationService.js";
 import * as dashboardService from "../services/dashboardService.js";
+import * as officerAnalytics from "../services/officerAnalyticsService.js";
 import * as reportService from "../services/reportService.js";
 import * as auditService from "../services/auditService.js";
 import * as settingsService from "../services/settingsService.js";
@@ -45,6 +46,29 @@ export async function dashboardTopInstitutions(req: Request, res: Response) {
 
 export async function dashboardTopOfficers(req: Request, res: Response) {
   return sendSuccess(res, await dashboardService.getTopOfficers(req.query));
+}
+
+export async function dashboardRankings(req: Request, res: Response) {
+  return sendSuccess(res, await officerAnalytics.getOfficerRankings(req.query));
+}
+
+export async function dashboardYearly(req: Request, res: Response) {
+  return sendSuccess(res, await officerAnalytics.getYearlyTraining(req.query));
+}
+
+export async function dashboardCompare(req: Request, res: Response) {
+  return sendSuccess(
+    res,
+    await officerAnalytics.compareOfficers(String(req.query.userIdA ?? ""), String(req.query.userIdB ?? "")),
+  );
+}
+
+export async function listOfficersSelect(_req: Request, res: Response) {
+  return sendSuccess(res, await officerAnalytics.listOfficersForSelect());
+}
+
+export async function officerDashboard(req: Request, res: Response) {
+  return sendSuccess(res, await officerAnalytics.getAdminOfficerDashboard(req.params.id));
 }
 
 export async function listUsers(req: Request, res: Response) {

@@ -18,6 +18,8 @@ import { AdminMasterDataPage } from "@/pages/admin/AdminMasterDataPage";
 import { AdminReportsPage } from "@/pages/admin/AdminReportsPage";
 import { AdminAuditPage } from "@/pages/admin/AdminAuditPage";
 import { AdminSettingsPage } from "@/pages/admin/AdminSettingsPage";
+import { AdminOfficerDashboardPage } from "@/pages/admin/AdminOfficerDashboardPage";
+import { AdminComparePage } from "@/pages/admin/AdminComparePage";
 
 export default function App() {
   return (
@@ -44,6 +46,8 @@ export default function App() {
             <Route element={<AdminLayout />}>
               <Route path="/admin" element={<AdminDashboardPage />} />
               <Route path="/admin/users" element={<AdminUsersPage />} />
+              <Route path="/admin/users/:id/dashboard" element={<AdminOfficerDashboardPage />} />
+              <Route path="/admin/analytics/compare" element={<AdminComparePage />} />
               <Route path="/admin/training-programs" element={<AdminProgramsPage />} />
               <Route path="/admin/records" element={<AdminRecordsPage />} />
               <Route path="/admin/records/:id" element={<AdminRecordDetailPage />} />
