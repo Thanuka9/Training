@@ -1,3 +1,4 @@
+import { randomBytes } from "node:crypto";
 import type { Request } from "express";
 import { prisma } from "../config/prisma.js";
 import { hashPassword, verifyPassword } from "../utils/password.js";
@@ -10,10 +11,44 @@ import type { z } from "zod";
 import type { Role, UserStatus } from "../types/domain.js";
 import { normalizeBankId } from "../utils/bankId.js";
 
+/** Unusable password for IMPORTED placeholder accounts until the officer registers. */
+export async function unusablePasswordHash() {
+  return hashPassword(`imported:${randomBytes(32).toString("hex")}`);
+}
+
 export async function registerUser(input: z.infer<typeof registerSchema>, req: Request) {
   const bankId = normalizeBankId(input.bankId);
   const existing = await prisma.user.findUnique({ where: { bankId } });
+
   if (existing) {
+    if (existing.status === "IMPORTED" && existing.role === "USER") {
+      const claimed = await prisma.user.update({
+        where: { id: existing.id },
+        data: {
+          fullName: input.fullName.trim(),
+          passwordHash: await hashPassword(input.password),
+          status: "PENDING",
+        },
+      });
+
+      await writeAuditLog({
+        actorUserId: claimed.id,
+        action: "USER_CLAIMED_IMPORTED",
+        entityType: "User",
+        entityId: claimed.id,
+        before: toPublicUser(existing),
+        after: toPublicUser(claimed),
+        req,
+      });
+
+      return {
+        user: toPublicUser(claimed),
+        message:
+          "Registration submitted. Your historical training records are already linked to this Bank ID. An administrator must approve your account before you can log in.",
+        claimedImported: true,
+      };
+    }
+
     throw conflict("A user with this Bank ID already exists");
   }
 
@@ -36,7 +71,11 @@ export async function registerUser(input: z.infer<typeof registerSchema>, req: R
     req,
   });
 
-  return toPublicUser(user);
+  return {
+    user: toPublicUser(user),
+    message: "Registration submitted. An administrator must approve your account before you can log in.",
+    claimedImported: false,
+  };
 }
 
 export async function loginUser(input: z.infer<typeof loginSchema>, req: Request) {
@@ -44,6 +83,14 @@ export async function loginUser(input: z.infer<typeof loginSchema>, req: Request
   const user = await prisma.user.findUnique({ where: { bankId } });
   if (!user || !(await verifyPassword(input.password, user.passwordHash))) {
     throw unauthorized("Invalid Bank ID or password");
+  }
+
+  if (user.status === "IMPORTED") {
+    throw new AppError(
+      403,
+      "ACCOUNT_IMPORTED",
+      "Historical records exist for this Bank ID. Please register to claim your account.",
+    );
   }
 
   if (user.status === "PENDING") {

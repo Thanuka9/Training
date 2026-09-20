@@ -17,7 +17,7 @@ export function LoginPage() {
   const [bankId, setBankId] = useState("");
   const [password, setPassword] = useState("");
   const [pending, setPending] = useState(false);
-  const [pendingMessage, setPendingMessage] = useState("");
+  const [statusMessage, setStatusMessage] = useState<{ kind: "pending" | "imported"; text: string } | null>(null);
   const [padDialog, setPadDialog] = useState<{ before: string; after: string; resumeSubmit: boolean } | null>(null);
   const acknowledgedPadRef = useRef<string | null>(null);
 
@@ -41,7 +41,7 @@ export function LoginPage() {
   }
 
   async function submitLogin(normalizedBankId: string) {
-    setPendingMessage("");
+    setStatusMessage(null);
     setPending(true);
     try {
       const user = await login({ bankId: normalizedBankId, password });
@@ -49,7 +49,9 @@ export function LoginPage() {
       navigate(from || (user.role === "ADMIN" ? "/admin" : "/app"), { replace: true });
     } catch (error) {
       if (error instanceof ApiRequestError && error.code === "ACCOUNT_PENDING") {
-        setPendingMessage(error.message);
+        setStatusMessage({ kind: "pending", text: error.message });
+      } else if (error instanceof ApiRequestError && error.code === "ACCOUNT_IMPORTED") {
+        setStatusMessage({ kind: "imported", text: error.message });
       } else {
         toast.error(error instanceof Error ? error.message : "Login failed");
       }
@@ -90,9 +92,16 @@ export function LoginPage() {
           <CardTitle>Sign in</CardTitle>
         </CardHeader>
         <CardContent>
-          {pendingMessage ? (
+          {statusMessage ? (
             <div className="mb-4 rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-950">
-              {pendingMessage}
+              <p>{statusMessage.text}</p>
+              {statusMessage.kind === "imported" ? (
+                <p className="mt-2">
+                  <Link className="font-semibold text-navy underline" to="/register">
+                    Register to claim this Bank ID
+                  </Link>
+                </p>
+              ) : null}
             </div>
           ) : null}
           <form className="space-y-4" onSubmit={onSubmit}>

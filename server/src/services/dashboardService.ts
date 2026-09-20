@@ -63,7 +63,7 @@ export async function getDashboardSummary(query: Record<string, unknown>) {
     prisma.trainingParticipation.count({
       where: { ...submitted, deliveryMode: "HYBRID" },
     }),
-    prisma.user.count({ where: { role: "USER" } }),
+    prisma.user.count({ where: { role: "USER", status: "ACTIVE" } }),
   ]);
 
   const pendingRecords = await prisma.trainingParticipation.findMany({
@@ -77,7 +77,7 @@ export async function getDashboardSummary(query: Record<string, unknown>) {
   });
 
   const attendedOfficers = await prisma.trainingParticipation.findMany({
-    where: { ...submitted, user: { role: "USER" } },
+    where: { ...submitted, user: { role: "USER", status: "ACTIVE" } },
     select: { userId: true },
   });
   const countByOfficer = new Map<string, number>();
@@ -86,7 +86,9 @@ export async function getDashboardSummary(query: Record<string, unknown>) {
   }
   const attendedIds = [...countByOfficer.keys()];
   const neverAttendedOfficers = await prisma.user.findMany({
-    where: attendedIds.length ? { role: "USER", id: { notIn: attendedIds } } : { role: "USER" },
+    where: attendedIds.length
+      ? { role: "USER", status: "ACTIVE", id: { notIn: attendedIds } }
+      : { role: "USER", status: "ACTIVE" },
     select: { id: true, fullName: true, bankId: true, status: true },
     orderBy: { fullName: "asc" },
     take: 20,
@@ -96,7 +98,10 @@ export async function getDashboardSummary(query: Record<string, unknown>) {
   let one = 0;
   let two = 0;
   let threePlus = 0;
-  const allOfficers = await prisma.user.findMany({ where: { role: "USER" }, select: { id: true } });
+  const allOfficers = await prisma.user.findMany({
+    where: { role: "USER", status: "ACTIVE" },
+    select: { id: true },
+  });
   for (const officer of allOfficers) {
     const count = countByOfficer.get(officer.id) ?? 0;
     if (count === 0) zero += 1;

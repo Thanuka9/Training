@@ -108,31 +108,48 @@ export function serializeParticipation(
   };
 }
 
-export async function getUserDashboard(userId: string) {
-  const [all, local, foreign, physical, online, hybrid] = await Promise.all([
+export async function getUserDashboard(userId: string, query: Record<string, unknown> = {}) {
+  const year = query.year ? Number(query.year) : NaN;
+  const hasYear = Number.isFinite(year) && year > 1900;
+  const yearFilter = hasYear
+    ? {
+        fromDate: {
+          gte: new Date(Date.UTC(year, 0, 1)),
+          lt: new Date(Date.UTC(year + 1, 0, 1)),
+        },
+      }
+    : {};
+
+  const scopeFilter = query.locationScope
+    ? { trainingProgram: { locationScope: String(query.locationScope) } }
+    : {};
+  const modeFilter = query.deliveryMode ? { deliveryMode: String(query.deliveryMode) } : {};
+
+  const where = {
+    userId,
+    ...yearFilter,
+    ...scopeFilter,
+    ...modeFilter,
+  };
+
+  const [all, allForYears] = await Promise.all([
     prisma.trainingParticipation.findMany({
-      where: { userId },
-      include: { completionStatus: true, participationRole: true, trainingProgram: { select: { locationScope: true } } },
+      where,
+      include: {
+        completionStatus: true,
+        participationRole: true,
+        trainingProgram: { select: { locationScope: true } },
+      },
     }),
-    prisma.trainingParticipation.count({
-      where: { userId, trainingProgram: { locationScope: "LOCAL" } },
-    }),
-    prisma.trainingParticipation.count({
-      where: { userId, trainingProgram: { locationScope: "FOREIGN" } },
-    }),
-    prisma.trainingParticipation.count({
-      where: { userId, deliveryMode: "PHYSICAL" },
-    }),
-    prisma.trainingParticipation.count({
-      where: { userId, deliveryMode: "ONLINE" },
-    }),
-    prisma.trainingParticipation.count({
-      where: { userId, deliveryMode: "HYBRID" },
+    prisma.trainingParticipation.findMany({
+      where: { userId, workflowStatus: { not: "DRAFT" } },
+      include: { trainingProgram: { select: { locationScope: true } } },
+      orderBy: { fromDate: "asc" },
     }),
   ]);
 
   const recent = await prisma.trainingParticipation.findMany({
-    where: { userId },
+    where,
     include: participationInclude,
     orderBy: { updatedAt: "desc" },
     take: 8,
@@ -149,19 +166,33 @@ export async function getUserDashboard(userId: string) {
   };
 
   const attended = all.filter((item) => item.workflowStatus !== "DRAFT");
+  const yearMap = new Map<number, { year: number; label: string; total: number; local: number; foreign: number }>();
+  for (const record of allForYears) {
+    const y = record.fromDate.getUTCFullYear();
+    const current = yearMap.get(y) ?? { year: y, label: String(y), total: 0, local: 0, foreign: 0 };
+    current.total += 1;
+    if (record.trainingProgram.locationScope === "LOCAL") current.local += 1;
+    if (record.trainingProgram.locationScope === "FOREIGN") current.foreign += 1;
+    yearMap.set(y, current);
+  }
 
   return {
+    filters: {
+      year: hasYear ? year : null,
+      locationScope: query.locationScope ? String(query.locationScope) : null,
+      deliveryMode: query.deliveryMode ? String(query.deliveryMode) : null,
+    },
     kpis: {
       total: all.length,
       draft: all.filter((item) => item.workflowStatus === "DRAFT").length,
       pendingReview: all.filter((item) => item.workflowStatus === "SUBMITTED").length,
       approved: all.filter((item) => item.workflowStatus === "APPROVED").length,
-      completed: all.filter((item) => item.completionStatus.name === "Completed").length,
-      local,
-      foreign,
-      physical,
-      online,
-      hybrid,
+      completed: attended.filter((item) => item.completionStatus.name === "Completed").length,
+      local: attended.filter((item) => item.trainingProgram.locationScope === "LOCAL").length,
+      foreign: attended.filter((item) => item.trainingProgram.locationScope === "FOREIGN").length,
+      physical: attended.filter((item) => item.deliveryMode === "PHYSICAL").length,
+      online: attended.filter((item) => item.deliveryMode === "ONLINE").length,
+      hybrid: attended.filter((item) => item.deliveryMode === "HYBRID").length,
       attended: attended.length,
     },
     distributions: {
@@ -170,22 +201,38 @@ export async function getUserDashboard(userId: string) {
       completionStatus: countBy((item) => item.completionStatus.name),
       participationRole: countBy((item) => item.participationRole.name),
     },
+    yearly: [...yearMap.values()].sort((a, b) => a.year - b.year),
     recent: recent.map(serializeParticipation),
   };
 }
 
 export async function listUserParticipations(userId: string, query: Record<string, unknown>) {
   const { skip, take, page, pageSize, search, sortDirection } = parsePagination(query);
+  const year = query.year ? Number(query.year) : NaN;
+  const hasYear = Number.isFinite(year) && year > 1900;
+
+  const programWhere: Prisma.TrainingProgramWhereInput = {
+    ...(query.locationScope ? { locationScope: String(query.locationScope) } : {}),
+    ...(search
+      ? {
+          OR: [{ name: { contains: search } }, { institution: { name: { contains: search } } }],
+        }
+      : {}),
+  };
+
   const where: Prisma.TrainingParticipationWhereInput = {
     userId,
     ...(query.workflowStatus ? { workflowStatus: query.workflowStatus as WorkflowStatus } : {}),
-    ...(search
+    ...(query.deliveryMode ? { deliveryMode: String(query.deliveryMode) as DeliveryMode } : {}),
+    ...(hasYear
       ? {
-          trainingProgram: {
-            OR: [{ name: { contains: search } }, { institution: { name: { contains: search } } }],
+          fromDate: {
+            gte: new Date(Date.UTC(year, 0, 1)),
+            lt: new Date(Date.UTC(year + 1, 0, 1)),
           },
         }
       : {}),
+    ...(Object.keys(programWhere).length ? { trainingProgram: programWhere } : {}),
   };
 
   const [items, total] = await prisma.$transaction([

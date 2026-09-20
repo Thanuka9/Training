@@ -71,4 +71,6 @@ router.get("/audit", asyncHandler(adminController.listAudit));
 router.get("/settings", asyncHandler(adminController.getSettings));
 router.put("/settings", asyncHandler(adminController.updateSettings));
 
+router.post("/import/historical", asyncHandler(adminController.importHistorical));
+
 export default router;

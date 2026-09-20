@@ -7,10 +7,11 @@ import { requireAuth } from "../middleware/auth.js";
 
 export async function register(req: Request, res: Response) {
   const input = registerSchema.parse(req.body);
-  const user = await authService.registerUser(input, req);
+  const result = await authService.registerUser(input, req);
   return sendCreated(res, {
-    user,
-    message: "Registration submitted. An administrator must approve your account before you can log in.",
+    user: result.user,
+    message: result.message,
+    claimedImported: result.claimedImported,
   });
 }
 

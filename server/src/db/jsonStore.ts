@@ -412,6 +412,22 @@ export async function seedJsonStore(env: {
     { name: "Foreign Training", sortOrder: 2 },
     { name: "Virtual Training Program", sortOrder: 3 },
     { name: "Public Lecture", sortOrder: 4 },
+    { name: "Webinar", sortOrder: 5 },
+    { name: "Conference", sortOrder: 6 },
+    { name: "Workshop", sortOrder: 7 },
+    { name: "Seminar", sortOrder: 8 },
+    { name: "Forum", sortOrder: 9 },
+    { name: "Knowledge Sharing Session", sortOrder: 10 },
+    { name: "Study Visit", sortOrder: 11 },
+    { name: "Online Seminar", sortOrder: 12 },
+    { name: "Own-paced", sortOrder: 13 },
+    { name: "Policy Forum", sortOrder: 14 },
+    { name: "Roundtable Discussion", sortOrder: 15 },
+    { name: "CBS", sortOrder: 16 },
+    { name: "SEACEN", sortOrder: 17 },
+    { name: "IMF SARTTAC", sortOrder: 18 },
+    { name: "IMF-STI", sortOrder: 19 },
+    { name: "MAS training", sortOrder: 20 },
   ];
   const typeRecords = [];
   for (const item of trainingTypes) {
@@ -451,7 +467,26 @@ export async function seedJsonStore(env: {
   }
 
   const institutionRecords = [];
-  for (const name of ["SEACEN", "CBS", "IMF", "World Bank", "Central Bank of Sri Lanka"]) {
+  for (const name of [
+    "CBS",
+    "CBSL",
+    "SEACEN",
+    "IMF",
+    "IMF SARTTAC",
+    "World Bank",
+    "Central Bank of Sri Lanka",
+    "Not Applicable",
+    "Monetary Authority of Singapore (MAS)",
+    "The Ceylon Chamber of Commerce",
+    "Bar Association of Sri Lanka",
+    "CFA Society Sri Lanka",
+    "Association of Professional Bankers (APB)",
+    "Reserve Bank of India (RBI)",
+    "Deutsche Bundesbank",
+    "Fitch Rating",
+    "Alliance for Financial Inclusion",
+    "South East Asian Central Banks (SEACEN) Research & Training",
+  ]) {
     institutionRecords.push(
       await client.institution.upsert({
         where: { name },

@@ -7,7 +7,11 @@ export const authApi = {
     bankId: string;
     password: string;
     confirmPassword: string;
-  }) => api<{ user: PublicUser; message: string }>("/auth/register", { method: "POST", body: JSON.stringify(payload) }),
+  }) =>
+    api<{ user: PublicUser; message: string; claimedImported?: boolean }>("/auth/register", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }),
   login: (payload: { bankId: string; password: string }) =>
     api<{ user: PublicUser }>("/auth/login", { method: "POST", body: JSON.stringify(payload) }),
   logout: () => api<{ message: string }>("/auth/logout", { method: "POST" }),

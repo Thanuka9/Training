@@ -1,0 +1,1432 @@
+{
+  "trainingTypes": [
+    "2 Day Training Programme",
+    "46th National Conference of the Institute of Chartered Accountant of Sri Lanka",
+    "APB 35th Anniversary Convention",
+    "BIS-IMF",
+    "BSD-Awareness session",
+    "Bar Association of Sri Lanka",
+    "CBS",
+    "CBS Training",
+    "CBSL",
+    "CBSL conducted by Deutsche Bundesbank",
+    "CFA",
+    "CFA Society Sri Lanka",
+    "CIMA Annual Summit",
+    "Capacity Development program by the IMF SARTTAC",
+    "Conference",
+    "Course on Essentials of Sustainable Finance: Essential know-how to transform conventional capital into sustainable funding",
+    "Deutsche Bundesbank",
+    "Financial Action Task Force (FATF) Standards",
+    "Foreign Training",
+    "Forum",
+    "General Training",
+    "Half-day Forum",
+    "IMF Institute for Capacity Development (ICD)",
+    "IMF SARTTAC",
+    "IMF Singapore Regional Training Institute (STI)",
+    "IMF- Singapore Regional Training Institute (STI)",
+    "IMF-STI",
+    "In-Person",
+    "Jakarta, Indonesia",
+    "Knowledge Session",
+    "Knowledge Sharing Session",
+    "MAS training",
+    "Mastercard Sri Lanka and Maldives",
+    "One day workshop",
+    "Online Seminar",
+    "Own-paced",
+    "Policy Forum",
+    "Post - Budget Forum 2025",
+    "Public Lecture",
+    "RBI",
+    "Reserve Bank of India (RBI)",
+    "Roundtable Discussion",
+    "SAARTAC",
+    "SEACEN",
+    "Seminar",
+    "Seminar on Economic Review and Outlook 2025",
+    "South East Asian Central Banks (SEACEN) Research & Training",
+    "Study Visit",
+    "The CFA Society Sri Lanka",
+    "The Ceylon Chamber of Commerce",
+    "The Chartered Institute of Personnel Management Sri Lanka (CIPM)",
+    "Virtual Knowledge Session",
+    "Virtual Online Cerrtificate Course- Bar Association of Sri Lanka",
+    "Virtual Training Program",
+    "Webinar",
+    "Workshop"
+  ],
+  "institutions": [
+    "APG Secretariat",
+    "Alliance for Financial Inclusion",
+    "Asia Pacific Group (APG) on Money Laundering",
+    "Association of Professional Bankers (APB)",
+    "BIS-IMF",
+    "Bank of England",
+    "Bar Associatio of Sri Lanka",
+    "Bar Association of Sri Lanka",
+    "CBS",
+    "CBS and International Finance Corporation",
+    "CBS/CBSL",
+    "CBSL",
+    "CBSL conducted by Deutsche Bundesbank",
+    "CBSL- BSD",
+    "CBSL- MSD",
+    "CFA Society Sri Lanka",
+    "CIMA",
+    "Central Bank of Sri Lanka",
+    "Chartered Institute of Management Accountants",
+    "Deutsche Bundesbank",
+    "Fitch Rating",
+    "GRI South Asia",
+    "HM Treasury",
+    "HRD",
+    "IMF",
+    "IMF Institute for Capacity Development (ICD)",
+    "IMF SARTTAC",
+    "IMF Singapore Regional Training Institute (STI)",
+    "IMF- Singapore Regional Training Institute (STI)",
+    "International Banking Finance Institute (IBFI)/ Banque De France",
+    "International Monetary Fund (IMF) and the Government of Singapore",
+    "KROLL",
+    "MBA Alumni Association of the University of Colombo",
+    "Mastercard Sri Lanka and Maldives",
+    "Monetary Authority of Singapore (MAS)",
+    "Not Applicable",
+    "RBI",
+    "Reserve Bank of India",
+    "Reserve Bank of India (RBI)",
+    "SAARTAC",
+    "SEACEN",
+    "SLBA, CIO Forum and Lanka Pay Private Limited",
+    "South East Asian Central Banks (SEACEN) Research & Training",
+    "Sri Lanka Finnet Summit",
+    "The Association of Professional Bankers Sri Lanka (APB)",
+    "The CFA Society Sri Lanka",
+    "The Ceylon Chamber of Commerce",
+    "The Chartered Institute of Management Accountants",
+    "The Chartered Institute of Personnel Management Sri Lanka (CIPM)",
+    "The Institute of Chartered Accountants of Sri Lanka (ICASL)",
+    "Toronto Center in Collaberation with Fianancial Supervisory Commission of Taiwan",
+    "UNODC",
+    "World Bank"
+  ],
+  "participationRoles": [
+    "Panelist",
+    "Participant",
+    "Resource Person"
+  ],
+  "completionStatuses": [
+    {
+      "name": "Planned",
+      "isFinal": false
+    },
+    {
+      "name": "Ongoing",
+      "isFinal": false
+    },
+    {
+      "name": "Completed",
+      "isFinal": true
+    },
+    {
+      "name": "Not Completed",
+      "isFinal": true
+    },
+    {
+      "name": "Cancelled",
+      "isFinal": true
+    }
+  ],
+  "trainingPrograms": [
+    {
+      "name": "Sri Lanka Economic Summit 2024",
+      "locationScope": "LOCAL",
+      "trainingType": "The Ceylon Chamber of Commerce",
+      "institution": "Not Applicable",
+      "venue": "Shangri-La Hotel, Galle Face, Colombo 02."
+    },
+    {
+      "name": "Course on Selected Issues in the Evolving Financial Regulatory Framework (FRF)",
+      "locationScope": "FOREIGN",
+      "trainingType": "IMF- Singapore Regional Training Institute (STI)",
+      "institution": "IMF- Singapore Regional Training Institute (STI)",
+      "venue": "IMF- Singapore Regional Training Institute (STI)"
+    },
+    {
+      "name": "SEACEN Webinar on Core Principles for Effective Banking Supervision",
+      "locationScope": "FOREIGN",
+      "trainingType": "South East Asian Central Banks (SEACEN) Research & Training",
+      "institution": "South East Asian Central Banks (SEACEN) Research & Training",
+      "venue": "Virtual"
+    },
+    {
+      "name": "Programme on \"BaselIII Framework\"",
+      "locationScope": "LOCAL",
+      "trainingType": "CBS",
+      "institution": "CBS",
+      "venue": "CBS"
+    },
+    {
+      "name": "Implementing Effective Regulation and Supervision ofClimate-related Financial Risks (January 27 - 31, 2025)",
+      "locationScope": "FOREIGN",
+      "trainingType": "SAARTAC",
+      "institution": "SAARTAC",
+      "venue": "Galle Face Hotel"
+    },
+    {
+      "name": "Global Economic & Sovereign Outlook 2025 by Fitch Ratings",
+      "locationScope": "FOREIGN",
+      "trainingType": "Webinar",
+      "institution": "Fitch Rating",
+      "venue": "Virtual"
+    },
+    {
+      "name": "Sri Lanka Economic Summit 2024",
+      "locationScope": "LOCAL",
+      "trainingType": "Conference",
+      "institution": "The Ceylon Chamber of Commerce",
+      "venue": "Shangri-La Hotel, Galle Face, Colombo 02."
+    },
+    {
+      "name": "Programme on \"Basel III Framework\"",
+      "locationScope": "LOCAL",
+      "trainingType": "CBS",
+      "institution": "CBS",
+      "venue": "CBS, Rajagiriya"
+    },
+    {
+      "name": "Implementing Effective Regulation and Supervision ofClimate-related Financial Risks (January 27 - 31, 2025)",
+      "locationScope": "FOREIGN",
+      "trainingType": "SAARTAC",
+      "institution": "CBS",
+      "venue": "Galle Face Hotel"
+    },
+    {
+      "name": "Programme on \"From Concepts to Closing: Mergers & Acquisitions Essentials\"",
+      "locationScope": "LOCAL",
+      "trainingType": "CFA",
+      "institution": "CFA Society Sri Lanka",
+      "venue": "Hotel Taj Samudra"
+    },
+    {
+      "name": "Course on Cyber Risk Regulation and Supervision (CRS)",
+      "locationScope": "FOREIGN",
+      "trainingType": "IMF Singapore Regional Training Institute (STI)",
+      "institution": "IMF Singapore Regional Training Institute (STI)",
+      "venue": "IMF Singapore Regional Training Institute (STI)"
+    },
+    {
+      "name": "Course on Understanding and Implementing the Basel Framework",
+      "locationScope": "FOREIGN",
+      "trainingType": "Deutsche Bundesbank",
+      "institution": "Deutsche Bundesbank",
+      "venue": "Deutsche Bundesbank"
+    },
+    {
+      "name": "Workshop and Policy Seminar on Climate Change Risks and Related Aspects",
+      "locationScope": "FOREIGN",
+      "trainingType": "Reserve Bank of India (RBI)",
+      "institution": "Reserve Bank of India (RBI)",
+      "venue": "New Delhi, India"
+    },
+    {
+      "name": "Seminar on Economic Review and Outlook 2025",
+      "locationScope": "LOCAL",
+      "trainingType": "Seminar on Economic Review and Outlook 2025",
+      "institution": "The Ceylon Chamber of Commerce",
+      "venue": "Ground Floor Auditorium, The Ceylon Chamber of Commerce, Nawam Mawatha, Colombo 02."
+    },
+    {
+      "name": "From Concepts to Closing: Mergers & Acquisitions Essentials",
+      "locationScope": "LOCAL",
+      "trainingType": "CFA Society Sri Lanka",
+      "institution": "CFA Society Sri Lanka",
+      "venue": "Upper Crystal Ballroom, Hotel Taj Samudra, Colombo 03"
+    },
+    {
+      "name": "AML CFT Compliance for Financial Institutions",
+      "locationScope": "LOCAL",
+      "trainingType": "CBS",
+      "institution": "CBS",
+      "venue": "CBS, Rajagiriya"
+    },
+    {
+      "name": "Financial Action Task Force (FATF) Standards Training Course",
+      "locationScope": "FOREIGN",
+      "trainingType": "Financial Action Task Force (FATF) Standards",
+      "institution": "Asia Pacific Group (APG) on Money Laundering",
+      "venue": "Busan, Republic of Korea."
+    },
+    {
+      "name": "Mastering Financial Statement Analysis",
+      "locationScope": "LOCAL",
+      "trainingType": "CBS",
+      "institution": "CBS",
+      "venue": "CBS, Rajagiriya"
+    },
+    {
+      "name": "Financial Soundness Indicators (FSIs) for Other Financial Corporations (OFCs)",
+      "locationScope": "FOREIGN",
+      "trainingType": "IMF Institute for Capacity Development (ICD)",
+      "institution": "IMF Institute for Capacity Development (ICD)",
+      "venue": "Virtual"
+    },
+    {
+      "name": "APB 35th Anniversary Convention - 2025",
+      "locationScope": "LOCAL",
+      "trainingType": "APB 35th Anniversary Convention",
+      "institution": "The Association of Professional Bankers Sri Lanka (APB)",
+      "venue": "Cinnamon Life - Waterfront, Colombo"
+    },
+    {
+      "name": "SEACEN Course on Risk-Based Supervision and Supervisory Review Process",
+      "locationScope": "FOREIGN",
+      "trainingType": "South East Asian Central Banks (SEACEN) Research & Training",
+      "institution": "South East Asian Central Banks (SEACEN) Research & Training",
+      "venue": "CBSL Atrium"
+    },
+    {
+      "name": "Next-Gen Banking and Payments: Tech Trends and Data-Driven Culture",
+      "locationScope": "LOCAL",
+      "trainingType": "CBS",
+      "institution": "CBS",
+      "venue": "CBS"
+    },
+    {
+      "name": "SEACEN Course on Risk-Based Supervision and the Supervisory Review Process",
+      "locationScope": "FOREIGN",
+      "trainingType": "South East Asian Central Banks (SEACEN) Research & Training",
+      "institution": "Not Applicable",
+      "venue": "—"
+    },
+    {
+      "name": "SEACEN Course on Risk-Based Supervision and the Supervisory Review Process",
+      "locationScope": "FOREIGN",
+      "trainingType": "South East Asian Central Banks (SEACEN) Research & Training",
+      "institution": "South East Asian Central Banks (SEACEN) Research & Training",
+      "venue": "CBSL Atrium"
+    },
+    {
+      "name": "SEACEN Course on Risk-Based Supervision and Supervisory Review Process",
+      "locationScope": "LOCAL",
+      "trainingType": "South East Asian Central Banks (SEACEN) Research & Training",
+      "institution": "South East Asian Central Banks (SEACEN) Research & Training",
+      "venue": "CBSL Atrium"
+    },
+    {
+      "name": "BIS-IMF Supervisory and Regulatory Online Course (SROC) for Banking Supervisors .",
+      "locationScope": "FOREIGN",
+      "trainingType": "BIS-IMF",
+      "institution": "BIS-IMF",
+      "venue": "Virtual"
+    },
+    {
+      "name": "The core principles for effective banking supervision, facilitated by the SEACEN Centre, on 22.01.2025",
+      "locationScope": "FOREIGN",
+      "trainingType": "South East Asian Central Banks (SEACEN) Research & Training",
+      "institution": "South East Asian Central Banks (SEACEN) Research & Training",
+      "venue": "Virtual"
+    },
+    {
+      "name": "IMF SARTTAC Training Course on Implementing Effective Regulation and Supervision of Climate-related Financial Risks, 27.01.2025-31.01.2025.",
+      "locationScope": "FOREIGN",
+      "trainingType": "SAARTAC",
+      "institution": "SAARTAC",
+      "venue": "Galle Face Hotel"
+    },
+    {
+      "name": "BIS-IMF Supervisory and Regulatory Online Course (SROC) for Banking Supervisors 23.08.2024 20.02.2025.",
+      "locationScope": "FOREIGN",
+      "trainingType": "BIS-IMF",
+      "institution": "BIS-IMF",
+      "venue": "Virtual"
+    },
+    {
+      "name": "The core principles for effective banking supervision, facilitated by the SEACEN Centre,",
+      "locationScope": "FOREIGN",
+      "trainingType": "South East Asian Central Banks (SEACEN) Research & Training",
+      "institution": "South East Asian Central Banks (SEACEN) Research & Training",
+      "venue": "Virtual"
+    },
+    {
+      "name": "IMF SARTTAC Training Course on Implementing Effective Regulation and Supervision of Climate-related Financial Risks",
+      "locationScope": "FOREIGN",
+      "trainingType": "SAARTAC",
+      "institution": "SAARTAC",
+      "venue": "Galle Face Hotel"
+    },
+    {
+      "name": "Programme on OperationalRiskManagement\"",
+      "locationScope": "LOCAL",
+      "trainingType": "CBS",
+      "institution": "CBS",
+      "venue": "CBS"
+    },
+    {
+      "name": "SEACEN Course on Risk-Based Supervision and Supervisory Review Process",
+      "locationScope": "FOREIGN",
+      "trainingType": "CBSL",
+      "institution": "South East Asian Central Banks (SEACEN) Research & Training",
+      "venue": "CBSL Atrium"
+    },
+    {
+      "name": "Seminar on \"Access unlocked: Digital payments for every business - low cost acceptance for a high-impact economy\"",
+      "locationScope": "LOCAL",
+      "trainingType": "Mastercard Sri Lanka and Maldives",
+      "institution": "Mastercard Sri Lanka and Maldives",
+      "venue": "Cinnamon Life - Colombo"
+    },
+    {
+      "name": "Evening Forum on Technology and Cyber Risk Supervision -from the Perspective of Regulator",
+      "locationScope": "LOCAL",
+      "trainingType": "Forum",
+      "institution": "Association of Professional Bankers (APB)",
+      "venue": "Bank of Ceylon Auditorium"
+    },
+    {
+      "name": "Cyber Security Knowledge Sharing Session",
+      "locationScope": "LOCAL",
+      "trainingType": "Knowledge Sharing Session",
+      "institution": "HRD",
+      "venue": "C3 - CBSL"
+    },
+    {
+      "name": "Workshop on Developing MNO APIs to Combat Digital Banking Fraud",
+      "locationScope": "LOCAL",
+      "trainingType": "Forum",
+      "institution": "SLBA, CIO Forum and Lanka Pay Private Limited",
+      "venue": "CBS, Rajagiriya"
+    },
+    {
+      "name": "39th MAS Bank Supervisors' Training Programme",
+      "locationScope": "FOREIGN",
+      "trainingType": "MAS training",
+      "institution": "Monetary Authority of Singapore (MAS)",
+      "venue": "MAS and M Hotel, Singapore"
+    },
+    {
+      "name": "Special Training Programme on Impairment requested by HDFC Bank",
+      "locationScope": "LOCAL",
+      "trainingType": "CBS",
+      "institution": "CBS",
+      "venue": "CBS, Rajagiriya"
+    },
+    {
+      "name": "SEACEN Course on Risk-Based Supervision and Supervisory Review Process",
+      "locationScope": "LOCAL",
+      "trainingType": "CBSL",
+      "institution": "South East Asian Central Banks (SEACEN) Research & Training",
+      "venue": "CBSL Atrium"
+    },
+    {
+      "name": "The Course on Financial Sector Surveillance (FSS) (2025-033)",
+      "locationScope": "FOREIGN",
+      "trainingType": "IMF-STI",
+      "institution": "International Monetary Fund (IMF) and the Government of Singapore",
+      "venue": "IMF - Singapore Regional Training Institute (STI)"
+    },
+    {
+      "name": "Practical Training Session on Communication Strategies Participant Guidelines",
+      "locationScope": "FOREIGN",
+      "trainingType": "IMF SARTTAC",
+      "institution": "IMF SARTTAC",
+      "venue": "CBSL"
+    },
+    {
+      "name": "CIMA Leadership Summit (1-day conference)",
+      "locationScope": "LOCAL",
+      "trainingType": "Conference",
+      "institution": "Chartered Institute of Management Accountants",
+      "venue": "Cinnamon Life Hotel, Colombo"
+    },
+    {
+      "name": "CIMA Leadership Summit",
+      "locationScope": "LOCAL",
+      "trainingType": "Conference",
+      "institution": "Chartered Institute of Management Accountants",
+      "venue": "Cinnamon Life Hotel, Colombo"
+    },
+    {
+      "name": "MarketLiquidity and Central Bank Tools",
+      "locationScope": "FOREIGN",
+      "trainingType": "Webinar",
+      "institution": "Bank of England",
+      "venue": "Virtual"
+    },
+    {
+      "name": "Big Data and A.I. (Own pace- Duration of the webinar is not available) , Virtual Event , 2025-05-20 to 2025-05-21",
+      "locationScope": "FOREIGN",
+      "trainingType": "Webinar",
+      "institution": "International Banking Finance Institute (IBFI)/ Banque De France",
+      "venue": "Virtual"
+    },
+    {
+      "name": "Programme on \"Asset & Liability Management for Banking Institutions\"",
+      "locationScope": "LOCAL",
+      "trainingType": "CBS",
+      "institution": "CBS",
+      "venue": "CBS, Rajagiriya"
+    },
+    {
+      "name": "Programme on A Practical Approach to Money, Foreign Exchange & Bond Markets with Local Insights,organized by the CFA Society Sri Lanka",
+      "locationScope": "LOCAL",
+      "trainingType": "CFA",
+      "institution": "CFA Society Sri Lanka",
+      "venue": "Galle Face Hotel"
+    },
+    {
+      "name": "CertificateCourseon Treasury and Foreign Exchange Operations",
+      "locationScope": "LOCAL",
+      "trainingType": "CBS",
+      "institution": "CBS",
+      "venue": "CBS"
+    },
+    {
+      "name": "Data Visualisation with Power BI",
+      "locationScope": "LOCAL",
+      "trainingType": "CBS",
+      "institution": "CBS",
+      "venue": "CBS"
+    },
+    {
+      "name": "Session on Corporate Governance for Board of Directors and Corproate Management of Hatton National Bank PLC",
+      "locationScope": "LOCAL",
+      "trainingType": "BSD-Awareness session",
+      "institution": "CBSL- BSD",
+      "venue": "CBSL-C4"
+    },
+    {
+      "name": "Essentials of Sustainable Finance: Essential know-how to transform conventional capital into sustainable funding",
+      "locationScope": "LOCAL",
+      "trainingType": "Course on Essentials of Sustainable Finance: Essential know-how to transform conventional capital into sustainable funding",
+      "institution": "The CFA Society Sri Lanka",
+      "venue": "Sapphire 3|4 Hall, Courtyard by Marriott, Colombo City Centre"
+    },
+    {
+      "name": "Basel III Framework - Computation of Basel III Risk Weighted Assets for Credit Risk",
+      "locationScope": "LOCAL",
+      "trainingType": "CBS",
+      "institution": "CBS",
+      "venue": "CBS"
+    },
+    {
+      "name": "Managing Non-Performing Loans and Advances (NPL) and Recovery through Litigation - Regulators Perspective of Handling NPL Banking Sector",
+      "locationScope": "LOCAL",
+      "trainingType": "CBS",
+      "institution": "CBS",
+      "venue": "CBS"
+    },
+    {
+      "name": "Programme on International Trade Finance",
+      "locationScope": "LOCAL",
+      "trainingType": "CBS",
+      "institution": "CBS",
+      "venue": "CBS"
+    },
+    {
+      "name": "Special Training Programme on Impairment for HDFC Bank",
+      "locationScope": "LOCAL",
+      "trainingType": "CBS",
+      "institution": "CBS",
+      "venue": "CBS"
+    },
+    {
+      "name": "Training Workshop on Suatainable Finance Roadmap 2.0",
+      "locationScope": "LOCAL",
+      "trainingType": "CBS",
+      "institution": "CBS and International Finance Corporation",
+      "venue": "Hilton Hotel, Colombo"
+    },
+    {
+      "name": "Virtual Course on Equity Analyst Training",
+      "locationScope": "LOCAL",
+      "trainingType": "The CFA Society Sri Lanka",
+      "institution": "The CFA Society Sri Lanka",
+      "venue": "Virtual"
+    },
+    {
+      "name": "FSRB led Standards Training Course",
+      "locationScope": "FOREIGN",
+      "trainingType": "Jakarta, Indonesia",
+      "institution": "APG Secretariat",
+      "venue": "Jakarta, Indonesia"
+    },
+    {
+      "name": "Mastering Organizational Conflict Management: From Tension to Resolution",
+      "locationScope": "LOCAL",
+      "trainingType": "The Chartered Institute of Personnel Management Sri Lanka (CIPM)",
+      "institution": "The Chartered Institute of Personnel Management Sri Lanka (CIPM)",
+      "venue": "Colombo 05"
+    },
+    {
+      "name": "\"Preparation and Submission ofStatutoryReturns\" - 05 & 06 August 2025",
+      "locationScope": "LOCAL",
+      "trainingType": "CBS",
+      "institution": "CBS",
+      "venue": "CBS"
+    },
+    {
+      "name": "46th National Conference of Chartered Accountants",
+      "locationScope": "LOCAL",
+      "trainingType": "46th National Conference of the Institute of Chartered Accountant of Sri Lanka",
+      "institution": "The Institute of Chartered Accountants of Sri Lanka (ICASL)",
+      "venue": "The Hotel Monarch Imperial, 31 A, Hospital Road, Sri Jayawardhanapura."
+    },
+    {
+      "name": "Post - Budget Forum 2025",
+      "locationScope": "LOCAL",
+      "trainingType": "Post - Budget Forum 2025",
+      "institution": "MBA Alumni Association of the University of Colombo",
+      "venue": "Cinnamon Life, Colombo"
+    },
+    {
+      "name": "Virtual Knowledge Session: Sustainability Reporting Landscape and the GRI Standards",
+      "locationScope": "LOCAL",
+      "trainingType": "Virtual Knowledge Session",
+      "institution": "GRI South Asia",
+      "venue": "Virtual"
+    },
+    {
+      "name": "10-weeek Online Certificate Course in \"Compliance\" 2025- Session on Regulatory Requirements applicable to Related Party Requirements of Licensed Banks",
+      "locationScope": "LOCAL",
+      "trainingType": "Virtual Online Cerrtificate Course- Bar Association of Sri Lanka",
+      "institution": "Bar Association of Sri Lanka",
+      "venue": "Virtual"
+    },
+    {
+      "name": "10-weeek Online Certificate Course in \"Compliance\" 2025- Session on Regulatory Requirements applicable to Related Party Requirements of Licensed Banks",
+      "locationScope": "LOCAL",
+      "trainingType": "Virtual Online Cerrtificate Course- Bar Association of Sri Lanka",
+      "institution": "Bar Associatio of Sri Lanka",
+      "venue": "Virtual"
+    },
+    {
+      "name": "CIMA- Shift 25 Summit",
+      "locationScope": "LOCAL",
+      "trainingType": "CIMA Annual Summit",
+      "institution": "CIMA",
+      "venue": "Cinnamon Life, Colombo"
+    },
+    {
+      "name": "Macroeconomic Foundation course for Central Bank of Sri Lanka",
+      "locationScope": "LOCAL",
+      "trainingType": "Capacity Development program by the IMF SARTTAC",
+      "institution": "IMF SARTTAC",
+      "venue": "CBS"
+    },
+    {
+      "name": "Special programme on Central Banking Practices for Officers of Nepal Rastra Bank",
+      "locationScope": "LOCAL",
+      "trainingType": "General Training",
+      "institution": "CBS/CBSL",
+      "venue": "CBS"
+    },
+    {
+      "name": "Macroeconomic Foundation course for Central Bank of Sri Lanka",
+      "locationScope": "LOCAL",
+      "trainingType": "Capacity Development program by the IMF SARTTAC",
+      "institution": "CBS/CBSL",
+      "venue": "—"
+    },
+    {
+      "name": "Programme on 'Effective Communication Skills for the Modern World of Work' for Officers of the CBSL",
+      "locationScope": "LOCAL",
+      "trainingType": "CBS",
+      "institution": "CBS/CBSL",
+      "venue": "C3"
+    },
+    {
+      "name": "SEACEN Course on Risk-Based Supervision and Supervisory Review Process",
+      "locationScope": "FOREIGN",
+      "trainingType": "CBSL",
+      "institution": "South East Asian Central Banks (SEACEN) Research & Training",
+      "venue": "CBSL"
+    },
+    {
+      "name": "Programme on valaution on Treausry bonds",
+      "locationScope": "LOCAL",
+      "trainingType": "CBS",
+      "institution": "CBS",
+      "venue": "CBS"
+    },
+    {
+      "name": "Certificate course on Compliance",
+      "locationScope": "LOCAL",
+      "trainingType": "Bar Association of Sri Lanka",
+      "institution": "Bar Association of Sri Lanka",
+      "venue": "Virtual"
+    },
+    {
+      "name": "\"Preparation and Submission ofStatutoryReturns\" - 05 & 06 August 2025",
+      "locationScope": "LOCAL",
+      "trainingType": "CBS",
+      "institution": "Not Applicable",
+      "venue": "—"
+    },
+    {
+      "name": "\"Preparation and Submission ofStatutoryReturns\" - 05 & 06 August 2025",
+      "locationScope": "LOCAL",
+      "trainingType": "CBS",
+      "institution": "CBS/CBSL",
+      "venue": "CBS"
+    },
+    {
+      "name": "Post - Budget Forum 2025",
+      "locationScope": "LOCAL",
+      "trainingType": "Half-day Forum",
+      "institution": "MBA Alumni Association of the University of Colombo",
+      "venue": "Cinnamon Life"
+    },
+    {
+      "name": "Special programme on Skill Development and Personal Assistants",
+      "locationScope": "LOCAL",
+      "trainingType": "CBS",
+      "institution": "Not Applicable",
+      "venue": "—"
+    },
+    {
+      "name": "Workshop on Essential Skills for Secretaries",
+      "locationScope": "LOCAL",
+      "trainingType": "One day workshop",
+      "institution": "Not Applicable",
+      "venue": "—"
+    },
+    {
+      "name": "Programme on \"BaselIII Framework\"",
+      "locationScope": "LOCAL",
+      "trainingType": "CBS",
+      "institution": "Not Applicable",
+      "venue": "CBS"
+    },
+    {
+      "name": "CIMA- Shift 25 Summit",
+      "locationScope": "LOCAL",
+      "trainingType": "CIMA Annual Summit",
+      "institution": "The Chartered Institute of Management Accountants",
+      "venue": "Cinnamon Life Hotel"
+    },
+    {
+      "name": "Study Visit to Reserve Bank of India for Capacity Development Sessions on AML/CFT Supervision",
+      "locationScope": "FOREIGN",
+      "trainingType": "Study Visit",
+      "institution": "RBI",
+      "venue": "RBI"
+    },
+    {
+      "name": "Courase on AML/CFT Risk Based Supervision of Financial Institution",
+      "locationScope": "FOREIGN",
+      "trainingType": "Own-paced",
+      "institution": "IMF",
+      "venue": "Online"
+    },
+    {
+      "name": "SEACEN Online Seminar: Tariffs, Supply Chain, and Policy Implications",
+      "locationScope": "LOCAL",
+      "trainingType": "Online Seminar",
+      "institution": "SEACEN",
+      "venue": "Online"
+    },
+    {
+      "name": "SEACEN-NGFS Course on Regulation and Supervision of Climate Risk and Disclosure Standards",
+      "locationScope": "LOCAL",
+      "trainingType": "SEACEN",
+      "institution": "SEACEN",
+      "venue": "Manial, Philipines"
+    },
+    {
+      "name": "Courase on Anti-Money Laundering Combating the Financing Terrorism Aml CFT Risk-based Supervision of Financial Institution",
+      "locationScope": "FOREIGN",
+      "trainingType": "Own-paced",
+      "institution": "IMF",
+      "venue": "Online"
+    },
+    {
+      "name": "The Core Principles for Effective Banking Supervision",
+      "locationScope": "FOREIGN",
+      "trainingType": "Webinar",
+      "institution": "South East Asian Central Banks (SEACEN) Research & Training",
+      "venue": "Virtual"
+    },
+    {
+      "name": "AML/CFT Capacity Building Programme",
+      "locationScope": "LOCAL",
+      "trainingType": "CBS",
+      "institution": "KROLL",
+      "venue": "CBS, Rajagiriya"
+    },
+    {
+      "name": "Managing Non-Performing Loans and Advances (NPL) and Recovery through Litigation - Regulators Perspective of Handling NPL Banking Sector",
+      "locationScope": "LOCAL",
+      "trainingType": "CBS",
+      "institution": "CBSL- MSD",
+      "venue": "CBSL"
+    },
+    {
+      "name": "Knowledge Sharing Session - Maldives Monetary Authority and CBSL",
+      "locationScope": "LOCAL",
+      "trainingType": "CBSL",
+      "institution": "CBSL- MSD",
+      "venue": "CBSL"
+    },
+    {
+      "name": "UNSCRs 1267 & 1373 Asset Freezing Measures and Effective Management",
+      "locationScope": "LOCAL",
+      "trainingType": "Workshop",
+      "institution": "UNODC",
+      "venue": "Jetwing Colombo Seven"
+    },
+    {
+      "name": "Technical Assistance Programme",
+      "locationScope": "LOCAL",
+      "trainingType": "Knowledge Session",
+      "institution": "HM Treasury",
+      "venue": "CBSL"
+    },
+    {
+      "name": "Certificate Course on Compliance in Banks",
+      "locationScope": "LOCAL",
+      "trainingType": "CBS",
+      "institution": "CBS",
+      "venue": "CBS, Rajagiriya"
+    },
+    {
+      "name": "The Programme on Familiarization of Use Cases of AI in Finance",
+      "locationScope": "FOREIGN",
+      "trainingType": "2 Day Training Programme",
+      "institution": "Reserve Bank of India",
+      "venue": "College of Supervisors, Reserve Bank of India"
+    },
+    {
+      "name": "Course on Financial Soundness Indicators",
+      "locationScope": "FOREIGN",
+      "trainingType": "IMF-STI",
+      "institution": "IMF",
+      "venue": "IMF - Singapore Regional Training Institute (STI)"
+    },
+    {
+      "name": "Green Bonds: Unlocking Sustainable Investment Opportunities",
+      "locationScope": "LOCAL",
+      "trainingType": "Workshop",
+      "institution": "CFA Society Sri Lanka",
+      "venue": "Galle Face Hotel"
+    },
+    {
+      "name": "Workshop on Analysis of Supervisory Data using Python",
+      "locationScope": "FOREIGN",
+      "trainingType": "RBI",
+      "institution": "RBI",
+      "venue": "Mumbai, India"
+    },
+    {
+      "name": "ESG Training Programme by Deutsche Bundesbank",
+      "locationScope": "FOREIGN",
+      "trainingType": "CBSL conducted by Deutsche Bundesbank",
+      "institution": "CBSL conducted by Deutsche Bundesbank",
+      "venue": "CBSL"
+    },
+    {
+      "name": "Banking Beyond 2030: The CEO's Roadmap for a digitally enabled economy in Sri Lanka",
+      "locationScope": "LOCAL",
+      "trainingType": "Roundtable Discussion",
+      "institution": "Sri Lanka Finnet Summit",
+      "venue": "BMICH"
+    },
+    {
+      "name": "Regional Training program on Conglomerate Supervision and Sup Tech Support",
+      "locationScope": "FOREIGN",
+      "trainingType": "In-Person",
+      "institution": "Toronto Center in Collaberation with Fianancial Supervisory Commission of Taiwan",
+      "venue": "Taipei, Taiwan"
+    },
+    {
+      "name": "10-weeek Online Certificate Course in \"Compliance\" 2025- Session on Regulatory Requirements applicable to Related Party Requirements of Licensed Banks",
+      "locationScope": "LOCAL",
+      "trainingType": "2 Day Training Programme",
+      "institution": "IMF",
+      "venue": "Bank of Ceylon Auditorium"
+    },
+    {
+      "name": "39th MAS Bank Supervisors' Training Programme",
+      "locationScope": "FOREIGN",
+      "trainingType": "46th National Conference of the Institute of Chartered Accountant of Sri Lanka",
+      "institution": "International Monetary Fund (IMF) and the Government of Singapore",
+      "venue": "BMICH"
+    },
+    {
+      "name": "46th National Conference of Chartered Accountants",
+      "locationScope": "LOCAL",
+      "trainingType": "APB 35th Anniversary Convention",
+      "institution": "CFA Society Sri Lanka",
+      "venue": "Busan, Republic of Korea."
+    },
+    {
+      "name": "AML CFT Compliance for Financial Institutions",
+      "locationScope": "LOCAL",
+      "trainingType": "Bar Association of Sri Lanka",
+      "institution": "Alliance for Financial Inclusion",
+      "venue": "C3"
+    },
+    {
+      "name": "AML/CFT Capacity Building Programme",
+      "locationScope": "LOCAL",
+      "trainingType": "BIS-IMF",
+      "institution": "APG Secretariat",
+      "venue": "C3 - CBSL"
+    },
+    {
+      "name": "APB 35th Anniversary Convention - 2025",
+      "locationScope": "LOCAL",
+      "trainingType": "BSD-Awareness session",
+      "institution": "Asia Pacific Group (APG) on Money Laundering",
+      "venue": "CBS"
+    },
+    {
+      "name": "Banking Beyond 2030: The CEO's Roadmap for a digitally enabled economy in Sri Lanka",
+      "locationScope": "LOCAL",
+      "trainingType": "Capacity Development program by the IMF SARTTAC",
+      "institution": "Association of Professional Bankers (APB)",
+      "venue": "CBS, Rajagiriya"
+    },
+    {
+      "name": "Basel III Framework - Computation of Basel III Risk Weighted Assets for Credit Risk",
+      "locationScope": "LOCAL",
+      "trainingType": "CBS",
+      "institution": "Bank of England",
+      "venue": "CBSL"
+    },
+    {
+      "name": "Big Data and A.I. (Own pace- Duration of the webinar is not available) , Virtual Event , 2025-05-20 to 2025-05-21",
+      "locationScope": "LOCAL",
+      "trainingType": "CBSL",
+      "institution": "Bar Associatio of Sri Lanka",
+      "venue": "CBSL Atrium"
+    },
+    {
+      "name": "BIS-IMF Supervisory and Regulatory Online Course (SROC) for Banking Supervisors .",
+      "locationScope": "LOCAL",
+      "trainingType": "CBSL conducted by Deutsche Bundesbank",
+      "institution": "Bar Association of Sri Lanka",
+      "venue": "CBSL-C4"
+    },
+    {
+      "name": "BIS-IMF Supervisory and Regulatory Online Course (SROC) for Banking Supervisors 23.08.2024 20.02.2025.",
+      "locationScope": "LOCAL",
+      "trainingType": "CFA",
+      "institution": "BIS-IMF",
+      "venue": "Cinnamon Life"
+    },
+    {
+      "name": "Certificate Course on Compliance in Banks",
+      "locationScope": "LOCAL",
+      "trainingType": "CFA Society Sri Lanka",
+      "institution": "CBS",
+      "venue": "Cinnamon Life - Colombo"
+    },
+    {
+      "name": "Certificate course on Compliance",
+      "locationScope": "LOCAL",
+      "trainingType": "CIMA Annual Summit",
+      "institution": "CBS and International Finance Corporation",
+      "venue": "Cinnamon Life - Waterfront, Colombo"
+    },
+    {
+      "name": "CertificateCourseon Treasury and Foreign Exchange Operations",
+      "locationScope": "LOCAL",
+      "trainingType": "Conference",
+      "institution": "CBS/CBSL",
+      "venue": "Cinnamon Life Hotel"
+    },
+    {
+      "name": "CIMA Leadership Summit",
+      "locationScope": "LOCAL",
+      "trainingType": "Course on Essentials of Sustainable Finance: Essential know-how to transform conventional capital into sustainable funding",
+      "institution": "CBSL- BSD",
+      "venue": "Cinnamon Life Hotel, Colombo"
+    },
+    {
+      "name": "CIMA Leadership Summit (1-day conference)",
+      "locationScope": "LOCAL",
+      "trainingType": "Course on Essentials of Sustainable Finance: Essential know-how to transform conventional capital into sustainable funding",
+      "institution": "CBSL conducted by Deutsche Bundesbank",
+      "venue": "Cinnamon Life, Colombo"
+    },
+    {
+      "name": "CIMA- Shift 25 Summit",
+      "locationScope": "LOCAL",
+      "trainingType": "Deutsche Bundesbank",
+      "institution": "CBSL- MSD",
+      "venue": "College of Supervisors, Reserve Bank of India"
+    },
+    {
+      "name": "Courase on AML/CFT Risk Based Supervision of Financial Institution",
+      "locationScope": "LOCAL",
+      "trainingType": "Financial Action Task Force (FATF) Standards",
+      "institution": "CFA Society Sri Lanka",
+      "venue": "Colombo 05"
+    },
+    {
+      "name": "Courase on Anti-Money Laundering Combating the Financing Terrorism Aml CFT Risk-based Supervision of Financial Institution",
+      "locationScope": "LOCAL",
+      "trainingType": "Forum",
+      "institution": "Chartered Institute of Management Accountants",
+      "venue": "Deutsche Bundesbank"
+    },
+    {
+      "name": "Course on Cyber Risk Regulation and Supervision (CRS)",
+      "locationScope": "LOCAL",
+      "trainingType": "Half-day Forum",
+      "institution": "CIMA",
+      "venue": "Galle Face Hotel"
+    },
+    {
+      "name": "Course on Financial Soundness Indicators",
+      "locationScope": "LOCAL",
+      "trainingType": "IMF Singapore Regional Training Institute (STI)",
+      "institution": "Deutsche Bundesbank",
+      "venue": "Galle Face Hotel"
+    },
+    {
+      "name": "Course on Selected Issues in the Evolving Financial Regulatory Framework (FRF)",
+      "locationScope": "LOCAL",
+      "trainingType": "IMF Institute for Capacity Development (ICD)",
+      "institution": "Fitch Rating",
+      "venue": "Ground Floor Auditorium, The Ceylon Chamber of Commerce, Nawam Mawatha, Colombo 02."
+    },
+    {
+      "name": "Course on Understanding and Implementing the Basel Framework",
+      "locationScope": "LOCAL",
+      "trainingType": "IMF SARTTAC",
+      "institution": "GRI South Asia",
+      "venue": "Hilton Hotel, Colombo"
+    },
+    {
+      "name": "Cyber Security Knowledge Sharing Session",
+      "locationScope": "LOCAL",
+      "trainingType": "IMF- Singapore Regional Training Institute (STI)",
+      "institution": "HM Treasury",
+      "venue": "Hotel Taj Samudra"
+    },
+    {
+      "name": "Data Visualisation with Power BI",
+      "locationScope": "LOCAL",
+      "trainingType": "IMF-STI",
+      "institution": "HRD",
+      "venue": "IMF - Singapore Regional Training Institute (STI)"
+    },
+    {
+      "name": "ESG Training Programme by Deutsche Bundesbank",
+      "locationScope": "LOCAL",
+      "trainingType": "In-Person",
+      "institution": "IMF",
+      "venue": "IMF Singapore Regional Training Institute (STI)"
+    },
+    {
+      "name": "Essentials of Sustainable Finance: Essential know-how to transform conventional capital into sustainable funding",
+      "locationScope": "LOCAL",
+      "trainingType": "Jakarta, Indonesia",
+      "institution": "IMF Singapore Regional Training Institute (STI)",
+      "venue": "IMF- Singapore Regional Training Institute (STI)"
+    },
+    {
+      "name": "Evening Forum on Technology and Cyber Risk Supervision -from the Perspective of Regulator",
+      "locationScope": "LOCAL",
+      "trainingType": "Knowledge Session",
+      "institution": "IMF Institute for Capacity Development (ICD)",
+      "venue": "Jakarta, Indonesia"
+    },
+    {
+      "name": "Financial Action Task Force (FATF) Standards Training Course",
+      "locationScope": "LOCAL",
+      "trainingType": "Knowledge Sharing Session",
+      "institution": "IMF SARTTAC",
+      "venue": "Jetwing Colombo Seven"
+    },
+    {
+      "name": "Financial Soundness Indicators (FSIs) for Other Financial Corporations (OFCs)",
+      "locationScope": "LOCAL",
+      "trainingType": "MAS training",
+      "institution": "IMF- Singapore Regional Training Institute (STI)",
+      "venue": "Manial, Philipines"
+    },
+    {
+      "name": "From Concepts to Closing: Mergers & Acquisitions Essentials",
+      "locationScope": "LOCAL",
+      "trainingType": "Mastercard Sri Lanka and Maldives",
+      "institution": "International Banking Finance Institute (IBFI)/ Banque De France",
+      "venue": "MAS and M Hotel, Singapore"
+    },
+    {
+      "name": "FSRB led Standards Training Course",
+      "locationScope": "LOCAL",
+      "trainingType": "One day workshop",
+      "institution": "KROLL",
+      "venue": "Mumbai, India"
+    },
+    {
+      "name": "Global Economic & Sovereign Outlook 2025 by Fitch Ratings",
+      "locationScope": "LOCAL",
+      "trainingType": "Online Seminar",
+      "institution": "Mastercard Sri Lanka and Maldives",
+      "venue": "Namibia"
+    },
+    {
+      "name": "Green Bonds: Unlocking Sustainable Investment Opportunities",
+      "locationScope": "LOCAL",
+      "trainingType": "Own-paced",
+      "institution": "MBA Alumni Association of the University of Colombo",
+      "venue": "New Delhi, India"
+    },
+    {
+      "name": "IMF SARTTAC Training Course on Implementing Effective Regulation and Supervision of Climate-related Financial Risks",
+      "locationScope": "LOCAL",
+      "trainingType": "Policy Forum",
+      "institution": "Monetary Authority of Singapore (MAS)",
+      "venue": "Online"
+    },
+    {
+      "name": "IMF SARTTAC Training Course on Implementing Effective Regulation and Supervision of Climate-related Financial Risks, 27.01.2025-31.01.2025.",
+      "locationScope": "LOCAL",
+      "trainingType": "Post - Budget Forum 2025",
+      "institution": "Not Applicable",
+      "venue": "RBI"
+    },
+    {
+      "name": "Implementing Effective Regulation and Supervision ofClimate-related Financial Risks (January 27 - 31, 2025)",
+      "locationScope": "LOCAL",
+      "trainingType": "RBI",
+      "institution": "RBI",
+      "venue": "Sapphire 3|4 Hall, Courtyard by Marriott, Colombo City Centre"
+    },
+    {
+      "name": "Knowledge Sharing Session - Maldives Monetary Authority and CBSL",
+      "locationScope": "LOCAL",
+      "trainingType": "Reserve Bank of India (RBI)",
+      "institution": "Reserve Bank of India",
+      "venue": "Shangri-La Hotel, Galle Face, Colombo 02."
+    },
+    {
+      "name": "Macroeconomic Foundation course for Central Bank of Sri Lanka",
+      "locationScope": "LOCAL",
+      "trainingType": "Roundtable Discussion",
+      "institution": "Reserve Bank of India (RBI)",
+      "venue": "Taipei, Taiwan"
+    },
+    {
+      "name": "Managing Non-Performing Loans and Advances (NPL) and Recovery through Litigation - Regulators Perspective of Handling NPL Banking Sector",
+      "locationScope": "LOCAL",
+      "trainingType": "SAARTAC",
+      "institution": "SAARTAC",
+      "venue": "The Hotel Monarch Imperial, 31 A, Hospital Road, Sri Jayawardhanapura."
+    },
+    {
+      "name": "MarketLiquidity and Central Bank Tools",
+      "locationScope": "LOCAL",
+      "trainingType": "SEACEN",
+      "institution": "SEACEN",
+      "venue": "Upper Crystal Ballroom, Hotel Taj Samudra, Colombo 03"
+    },
+    {
+      "name": "Mastering Financial Statement Analysis",
+      "locationScope": "LOCAL",
+      "trainingType": "Seminar on Economic Review and Outlook 2025",
+      "institution": "SLBA, CIO Forum and Lanka Pay Private Limited",
+      "venue": "Virtual"
+    },
+    {
+      "name": "Mastering Organizational Conflict Management: From Tension to Resolution",
+      "locationScope": "LOCAL",
+      "trainingType": "South East Asian Central Banks (SEACEN) Research & Training",
+      "institution": "South East Asian Central Banks (SEACEN) Research & Training",
+      "venue": "—"
+    },
+    {
+      "name": "Next-Gen Banking and Payments: Tech Trends and Data-Driven Culture",
+      "locationScope": "LOCAL",
+      "trainingType": "Study Visit",
+      "institution": "Sri Lanka Finnet Summit",
+      "venue": "—"
+    },
+    {
+      "name": "Post - Budget Forum 2025",
+      "locationScope": "LOCAL",
+      "trainingType": "The Ceylon Chamber of Commerce",
+      "institution": "The Association of Professional Bankers Sri Lanka (APB)",
+      "venue": "—"
+    },
+    {
+      "name": "Practical Training Session on Communication Strategies Participant Guidelines",
+      "locationScope": "LOCAL",
+      "trainingType": "The CFA Society Sri Lanka",
+      "institution": "The Ceylon Chamber of Commerce",
+      "venue": "—"
+    },
+    {
+      "name": "Programme on \"Asset & Liability Management for Banking Institutions\"",
+      "locationScope": "LOCAL",
+      "trainingType": "The Chartered Institute of Personnel Management Sri Lanka (CIPM)",
+      "institution": "The CFA Society Sri Lanka",
+      "venue": "—"
+    },
+    {
+      "name": "Programme on \"Basel III Framework\"",
+      "locationScope": "LOCAL",
+      "trainingType": "Virtual Knowledge Session",
+      "institution": "The Chartered Institute of Management Accountants",
+      "venue": "—"
+    },
+    {
+      "name": "Programme on \"BaselIII Framework\"",
+      "locationScope": "LOCAL",
+      "trainingType": "Virtual Online Cerrtificate Course- Bar Association of Sri Lanka",
+      "institution": "The Chartered Institute of Personnel Management Sri Lanka (CIPM)",
+      "venue": "—"
+    },
+    {
+      "name": "Programme on \"From Concepts to Closing: Mergers & Acquisitions Essentials\"",
+      "locationScope": "LOCAL",
+      "trainingType": "Webinar",
+      "institution": "The Institute of Chartered Accountants of Sri Lanka (ICASL)",
+      "venue": "—"
+    },
+    {
+      "name": "Programme on A Practical Approach to Money, Foreign Exchange & Bond Markets with Local Insights,organized by the CFA Society Sri Lanka",
+      "locationScope": "LOCAL",
+      "trainingType": "Workshop",
+      "institution": "Toronto Center in Collaberation with Fianancial Supervisory Commission of Taiwan",
+      "venue": "—"
+    },
+    {
+      "name": "Programme on OperationalRiskManagement\"",
+      "locationScope": "LOCAL",
+      "trainingType": "General Training",
+      "institution": "UNODC",
+      "venue": "—"
+    },
+    {
+      "name": "Programme on 'Effective Communication Skills for the Modern World of Work' for Officers of the CBSL",
+      "locationScope": "LOCAL",
+      "trainingType": "General Training",
+      "institution": "Not Applicable",
+      "venue": "—"
+    },
+    {
+      "name": "Programme on International Trade Finance",
+      "locationScope": "LOCAL",
+      "trainingType": "General Training",
+      "institution": "Not Applicable",
+      "venue": "—"
+    },
+    {
+      "name": "Programme on valaution on Treausry bonds",
+      "locationScope": "LOCAL",
+      "trainingType": "General Training",
+      "institution": "Not Applicable",
+      "venue": "—"
+    },
+    {
+      "name": "Regional Training program on Conglomerate Supervision and Sup Tech Support",
+      "locationScope": "LOCAL",
+      "trainingType": "General Training",
+      "institution": "Not Applicable",
+      "venue": "—"
+    },
+    {
+      "name": "SEACEN Course on Risk-Based Supervision and the Supervisory Review Process",
+      "locationScope": "LOCAL",
+      "trainingType": "General Training",
+      "institution": "Not Applicable",
+      "venue": "—"
+    },
+    {
+      "name": "SEACEN Course on Risk-Based Supervision and Supervisory Review Process",
+      "locationScope": "LOCAL",
+      "trainingType": "General Training",
+      "institution": "Not Applicable",
+      "venue": "—"
+    },
+    {
+      "name": "SEACEN Online Seminar: Tariffs, Supply Chain, and Policy Implications",
+      "locationScope": "LOCAL",
+      "trainingType": "General Training",
+      "institution": "Not Applicable",
+      "venue": "—"
+    },
+    {
+      "name": "SEACEN Webinar on Core Principles for Effective Banking Supervision",
+      "locationScope": "LOCAL",
+      "trainingType": "General Training",
+      "institution": "Not Applicable",
+      "venue": "—"
+    },
+    {
+      "name": "SEACEN-NGFS Course on Regulation and Supervision of Climate Risk and Disclosure Standards",
+      "locationScope": "LOCAL",
+      "trainingType": "General Training",
+      "institution": "Not Applicable",
+      "venue": "—"
+    },
+    {
+      "name": "Seminar on \"Access unlocked: Digital payments for every business - low cost acceptance for a high-impact economy\"",
+      "locationScope": "LOCAL",
+      "trainingType": "General Training",
+      "institution": "Not Applicable",
+      "venue": "—"
+    },
+    {
+      "name": "Seminar on Economic Review and Outlook 2025",
+      "locationScope": "LOCAL",
+      "trainingType": "General Training",
+      "institution": "Not Applicable",
+      "venue": "—"
+    },
+    {
+      "name": "Session on Corporate Governance for Board of Directors and Corproate Management of Hatton National Bank PLC",
+      "locationScope": "LOCAL",
+      "trainingType": "General Training",
+      "institution": "Not Applicable",
+      "venue": "—"
+    },
+    {
+      "name": "Special programme on Central Banking Practices for Officers of Nepal Rastra Bank",
+      "locationScope": "LOCAL",
+      "trainingType": "General Training",
+      "institution": "Not Applicable",
+      "venue": "—"
+    },
+    {
+      "name": "Special programme on Skill Development and Personal Assistants",
+      "locationScope": "LOCAL",
+      "trainingType": "General Training",
+      "institution": "Not Applicable",
+      "venue": "—"
+    },
+    {
+      "name": "Special Training Programme on Impairment for HDFC Bank",
+      "locationScope": "LOCAL",
+      "trainingType": "General Training",
+      "institution": "Not Applicable",
+      "venue": "—"
+    },
+    {
+      "name": "Special Training Programme on Impairment requested by HDFC Bank",
+      "locationScope": "LOCAL",
+      "trainingType": "General Training",
+      "institution": "Not Applicable",
+      "venue": "—"
+    },
+    {
+      "name": "Sri Lanka Economic Summit 2024",
+      "locationScope": "LOCAL",
+      "trainingType": "General Training",
+      "institution": "Not Applicable",
+      "venue": "—"
+    },
+    {
+      "name": "Study Visit to Reserve Bank of India for Capacity Development Sessions on AML/CFT Supervision",
+      "locationScope": "LOCAL",
+      "trainingType": "General Training",
+      "institution": "Not Applicable",
+      "venue": "—"
+    },
+    {
+      "name": "Technical Assistance Programme",
+      "locationScope": "LOCAL",
+      "trainingType": "General Training",
+      "institution": "Not Applicable",
+      "venue": "—"
+    },
+    {
+      "name": "The Core Principles for Effective Banking Supervision",
+      "locationScope": "LOCAL",
+      "trainingType": "General Training",
+      "institution": "Not Applicable",
+      "venue": "—"
+    },
+    {
+      "name": "The core principles for effective banking supervision, facilitated by the SEACEN Centre,",
+      "locationScope": "LOCAL",
+      "trainingType": "General Training",
+      "institution": "Not Applicable",
+      "venue": "—"
+    },
+    {
+      "name": "The core principles for effective banking supervision, facilitated by the SEACEN Centre, on 22.01.2025",
+      "locationScope": "LOCAL",
+      "trainingType": "General Training",
+      "institution": "Not Applicable",
+      "venue": "—"
+    },
+    {
+      "name": "The Course on Financial Sector Surveillance (FSS) (2025-033)",
+      "locationScope": "LOCAL",
+      "trainingType": "General Training",
+      "institution": "Not Applicable",
+      "venue": "—"
+    },
+    {
+      "name": "The Programme on Familiarization of Use Cases of AI in Finance",
+      "locationScope": "LOCAL",
+      "trainingType": "General Training",
+      "institution": "Not Applicable",
+      "venue": "—"
+    },
+    {
+      "name": "Training Workshop on Suatainable Finance Roadmap 2.0",
+      "locationScope": "LOCAL",
+      "trainingType": "General Training",
+      "institution": "Not Applicable",
+      "venue": "—"
+    },
+    {
+      "name": "UNSCRs 1267 & 1373 Asset Freezing Measures and Effective Management",
+      "locationScope": "LOCAL",
+      "trainingType": "General Training",
+      "institution": "Not Applicable",
+      "venue": "—"
+    },
+    {
+      "name": "Virtual Course on Equity Analyst Training",
+      "locationScope": "LOCAL",
+      "trainingType": "General Training",
+      "institution": "Not Applicable",
+      "venue": "—"
+    },
+    {
+      "name": "Virtual Knowledge Session: Sustainability Reporting Landscape and the GRI Standards",
+      "locationScope": "LOCAL",
+      "trainingType": "General Training",
+      "institution": "Not Applicable",
+      "venue": "—"
+    },
+    {
+      "name": "Workshop and Policy Seminar on Climate Change Risks and Related Aspects",
+      "locationScope": "LOCAL",
+      "trainingType": "General Training",
+      "institution": "Not Applicable",
+      "venue": "—"
+    },
+    {
+      "name": "Workshop on Analysis of Supervisory Data using Python",
+      "locationScope": "LOCAL",
+      "trainingType": "General Training",
+      "institution": "Not Applicable",
+      "venue": "—"
+    },
+    {
+      "name": "Workshop on Developing MNO APIs to Combat Digital Banking Fraud",
+      "locationScope": "LOCAL",
+      "trainingType": "General Training",
+      "institution": "Not Applicable",
+      "venue": "—"
+    },
+    {
+      "name": "Workshop on Essential Skills for Secretaries",
+      "locationScope": "LOCAL",
+      "trainingType": "General Training",
+      "institution": "Not Applicable",
+      "venue": "—"
+    }
+  ]
+}

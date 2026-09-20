@@ -8,7 +8,7 @@ import { createParticipationSchema, updateParticipationSchema } from "../validat
 
 export async function dashboard(req: Request, res: Response) {
   const user = requireActiveUser(req);
-  return sendSuccess(res, await participationService.getUserDashboard(user.id));
+  return sendSuccess(res, await participationService.getUserDashboard(user.id, req.query as Record<string, unknown>));
 }
 
 export async function listMine(req: Request, res: Response) {

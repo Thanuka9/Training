@@ -29,44 +29,78 @@ export function ProfilePage() {
 
   return (
     <div className="space-y-5">
-      <PageHeader title="Profile" description="Your account details are taken from the signed-in session." />
-      <Card>
-        <CardHeader>
-          <CardTitle>Account</CardTitle>
-        </CardHeader>
-        <CardContent className="grid gap-4 sm:grid-cols-2">
-          <div>
-            <Label>Full Name</Label>
-            <Input value={user?.fullName ?? ""} readOnly disabled />
-          </div>
-          <div>
-            <Label>Bank ID</Label>
-            <Input value={user?.bankId ?? ""} readOnly disabled />
-          </div>
-        </CardContent>
-      </Card>
-      <Card>
-        <CardHeader>
-          <CardTitle>Change password</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form className="max-w-md space-y-4" onSubmit={onSubmit}>
-            <div>
-              <Label htmlFor="currentPassword">Current password</Label>
-              <Input id="currentPassword" type="password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} required />
+      <PageHeader
+        title="Profile"
+        description="Account details come from your Bank ID login. Use this page to update your password."
+      />
+      <div className="grid gap-5 lg:grid-cols-[1.1fr_0.9fr]">
+        <Card className="border-navy/10 shadow-sm">
+          <CardHeader>
+            <CardTitle>Account</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="rounded-lg bg-navy/[0.04] px-4 py-3">
+              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted">Signed in as</p>
+              <p className="mt-1 text-lg font-semibold text-navy">{user?.fullName ?? "—"}</p>
+              <p className="text-sm text-slate-600">Bank ID {user?.bankId ?? "—"}</p>
             </div>
-            <div>
-              <Label htmlFor="newPassword">New password</Label>
-              <Input id="newPassword" type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} required minLength={8} />
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div>
+                <Label>Full Name</Label>
+                <Input value={user?.fullName ?? ""} readOnly disabled />
+              </div>
+              <div>
+                <Label>Bank ID</Label>
+                <Input value={user?.bankId ?? ""} readOnly disabled />
+              </div>
             </div>
-            <div>
-              <Label htmlFor="confirmPassword">Confirm password</Label>
-              <Input id="confirmPassword" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required minLength={8} />
-            </div>
-            <Button type="submit">Update password</Button>
-          </form>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+        <Card className="border-navy/10 shadow-sm">
+          <CardHeader>
+            <CardTitle>Change password</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <form className="space-y-4" onSubmit={onSubmit}>
+              <div>
+                <Label htmlFor="currentPassword">Current password</Label>
+                <Input
+                  id="currentPassword"
+                  type="password"
+                  value={currentPassword}
+                  onChange={(e) => setCurrentPassword(e.target.value)}
+                  required
+                />
+              </div>
+              <div>
+                <Label htmlFor="newPassword">New password</Label>
+                <Input
+                  id="newPassword"
+                  type="password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  required
+                  minLength={8}
+                />
+              </div>
+              <div>
+                <Label htmlFor="confirmPassword">Confirm password</Label>
+                <Input
+                  id="confirmPassword"
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  required
+                  minLength={8}
+                />
+              </div>
+              <Button type="submit" className="w-full sm:w-auto">
+                Update password
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }

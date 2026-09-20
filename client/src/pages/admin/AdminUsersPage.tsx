@@ -34,7 +34,7 @@ export function AdminUsersPage() {
       adminApi.users({
         search: params.get("search") ?? "",
         status: params.get("status") ?? "",
-        role: params.get("role") ?? "",
+        role: params.get("role") ?? "USER",
         neverAttended: params.get("neverAttended") ?? "",
         page: params.get("page") ?? "1",
         pageSize: 25,
@@ -99,35 +99,34 @@ export function AdminUsersPage() {
           />
           <Select
             value={params.get("status") ?? ""}
-            onChange={(e) => setParams({ ...searchParamsRecord(params), status: e.target.value })}
+            onChange={(e) => setParams({ ...searchParamsRecord(params), status: e.target.value, page: "1" })}
             className="max-w-48"
           >
             <option value="">All statuses</option>
-            {["PENDING", "ACTIVE", "DISABLED", "REJECTED"].map((item) => (
+            {["PENDING", "ACTIVE", "DISABLED", "REJECTED", "IMPORTED"].map((item) => (
               <option key={item} value={item}>
                 {item}
               </option>
             ))}
           </Select>
           <Select
-            value={params.get("role") ?? ""}
-            onChange={(e) => setParams({ ...searchParamsRecord(params), role: e.target.value })}
+            value={params.get("role") ?? "USER"}
+            onChange={(e) => setParams({ ...searchParamsRecord(params), role: e.target.value, page: "1" })}
             className="max-w-40"
           >
+            <option value="USER">Officers (USER)</option>
             <option value="">All roles</option>
-            <option value="USER">USER</option>
-            <option value="ADMIN">ADMIN</option>
           </Select>
           <Select
             value={params.get("neverAttended") ?? ""}
-            onChange={(e) => setParams({ ...searchParamsRecord(params), neverAttended: e.target.value })}
+            onChange={(e) => setParams({ ...searchParamsRecord(params), neverAttended: e.target.value, page: "1" })}
             className="max-w-56"
           >
             <option value="">All attendance</option>
             <option value="false">Has attended training</option>
             <option value="true">Has not attended any</option>
           </Select>
-          <Button variant="secondary" onClick={() => setParams({ ...searchParamsRecord(params), search })}>
+          <Button variant="secondary" onClick={() => setParams({ ...searchParamsRecord(params), search, page: "1" })}>
             Search
           </Button>
         </CardContent>
@@ -166,10 +165,20 @@ export function AdminUsersPage() {
                 {query.data?.items.map((user) => (
                   <tr key={user.id} className={user.neverAttended && user.role === "USER" ? "bg-amber-50/70" : undefined}>
                     <Td>{user.bankId}</Td>
-                    <Td>{user.fullName}</Td>
+                    <Td>{user.fullName?.trim() ? user.fullName : user.status === "IMPORTED" ? "(Imported — awaiting claim)" : "—"}</Td>
                     <Td>{user.role}</Td>
                     <Td>
-                      <Badge tone={user.status === "ACTIVE" ? "green" : user.status === "PENDING" ? "amber" : "red"}>
+                      <Badge
+                        tone={
+                          user.status === "ACTIVE"
+                            ? "green"
+                            : user.status === "PENDING"
+                              ? "amber"
+                              : user.status === "IMPORTED"
+                                ? "blue"
+                                : "red"
+                        }
+                      >
                         {user.status}
                       </Badge>
                     </Td>
@@ -205,12 +214,13 @@ export function AdminUsersPage() {
                           Dashboard
                         </Link>
                       ) : null}
-                      <Link className="text-navy underline" to={`/admin/users?search=${encodeURIComponent(user.bankId)}`}>
-                        Open
-                      </Link>
-                      <Link className="text-navy underline" to={`/admin/records?bankId=${encodeURIComponent(user.bankId)}`}>
-                        History
-                      </Link>
+                      {user.status === "IMPORTED" ? (
+                        <span className="text-xs text-muted">Awaiting officer registration</span>
+                      ) : (
+                        <Link className="text-navy underline" to={`/admin/records?bankId=${encodeURIComponent(user.bankId)}`}>
+                          History
+                        </Link>
+                      )}
                     </Td>
                   </tr>
                 ))}

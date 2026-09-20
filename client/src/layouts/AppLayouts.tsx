@@ -11,6 +11,7 @@ import {
   ScrollText,
   Settings,
   Shield,
+  Upload,
   UserRound,
   Users,
 } from "lucide-react";
@@ -31,6 +32,7 @@ const adminLinksBase: AdminNavLink[] = [
   { to: "/admin", label: "Dashboard", icon: LayoutDashboard, end: true },
   { to: "/admin/users", label: "Users", icon: Users },
   { to: "/admin/admins", label: "Admins", icon: Shield, superOnly: true },
+  { to: "/admin/import", label: "Import", icon: Upload },
   { to: "/admin/analytics/compare", label: "Compare", icon: GitCompare },
   { to: "/admin/training-programs", label: "Training Programs", icon: BookOpen },
   { to: "/admin/records", label: "Participation Records", icon: ClipboardList },
@@ -145,10 +147,10 @@ export function AdminLayout() {
 
 export function UserLayout() {
   return (
-    <div className="min-h-svh bg-paper">
+    <div className="min-h-svh bg-[linear-gradient(180deg,#f7f5f0_0%,#f3f0ea_40%,#eef2f7_100%)]">
       <TopBar home="/app" />
-      <div className="mx-auto w-full max-w-6xl px-4 py-5">
-        <nav className="mb-6 flex flex-wrap gap-1 rounded-xl border border-slate-200 bg-white p-1.5 shadow-sm">
+      <div className="mx-auto w-full max-w-6xl px-4 py-5 md:py-7">
+        <nav className="mb-6 flex flex-wrap gap-1 rounded-xl border border-navy/10 bg-white/90 p-1.5 shadow-sm backdrop-blur">
           <NavItems links={userLinks} />
         </nav>
         <Outlet />

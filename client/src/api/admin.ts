@@ -184,6 +184,20 @@ export const adminApi = {
       method: "PUT",
       body: JSON.stringify(payload),
     }),
+  importHistorical: (csv: string) =>
+    api<{
+      rowsTotal: number;
+      rowsImported: number;
+      rowsSkipped: number;
+      usersCreated: number;
+      usersUpdated: number;
+      programsCreated: number;
+      masterCreated: { trainingTypes: number; institutions: number; roles: number; completions: number };
+      errors: Array<{ row: number; message: string }>;
+    }>("/admin/import/historical", {
+      method: "POST",
+      body: JSON.stringify({ csv }),
+    }),
 };
 
 export function exportUrl(

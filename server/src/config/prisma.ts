@@ -1,6 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 import { env } from "./env.js";
 import { createJsonClient, ensureExtraDemoOfficers, jsonStoreIsEmpty, jsonStorePath, seedJsonStore } from "../db/jsonStore.js";
+import { syncWorkbookMasterData } from "../services/workbookMasterSync.js";
 
 export type DataStoreMode = "sqlserver" | "json";
 
@@ -21,6 +22,23 @@ async function connectSqlServer() {
   return sql;
 }
 
+async function ensureWorkbookCatalog(actorBankId?: string) {
+  const adminBankId = actorBankId ?? env.ADMIN_BANK_ID ?? "ADMIN001";
+  const admin = await prisma.user.findUnique({ where: { bankId: adminBankId } });
+  if (!admin) return;
+  const summary = await syncWorkbookMasterData(prisma, admin.id);
+  const created =
+    summary.created.typesCreated +
+    summary.created.institutionsCreated +
+    summary.created.rolesCreated +
+    summary.created.programsCreated;
+  if (created > 0) {
+    console.warn(
+      `Workbook master data: +${summary.created.typesCreated} types / +${summary.created.institutionsCreated} institutions / +${summary.created.programsCreated} programmes (catalog ${summary.trainingTypes}/${summary.institutions}/${summary.trainingPrograms})`,
+    );
+  }
+}
+
 async function bootJsonStore() {
   dbMode = "json";
   prisma = createJsonClient() as unknown as PrismaClient;
@@ -34,6 +52,7 @@ async function bootJsonStore() {
   } else {
     await ensureExtraDemoOfficers(undefined, process.env.TEST_USER_PASSWORD);
   }
+  await ensureWorkbookCatalog(env.ADMIN_BANK_ID);
   console.warn(`Using JSON file store at ${jsonStorePath()} (SQL Server can be enabled later with DATA_STORE=sqlserver)`);
 }
 
@@ -52,6 +71,7 @@ export async function initDb() {
       prisma = await connectSqlServer();
       dbMode = "sqlserver";
       console.log("Connected to SQL Server");
+      await ensureWorkbookCatalog(env.ADMIN_BANK_ID);
       return;
     } catch (error) {
       if (requested === "sqlserver") throw error;

@@ -94,6 +94,8 @@ Login uses **Bank ID as the username** (there is no separate username field). Th
 
 Admins are **separate accounts**. Officers are never promoted to admin. Only the super admin can open **Admins** and create additional ADMIN logins. Officer rankings, never-attended lists, and Compare use USER accounts only.
 
+**Historical import:** Admin → **Import** accepts the 2025 register CSV (`Bank No` = Bank ID; dates prefer **D/M/YYYY**). Rows without Bank No are skipped. Officers not yet registered are stored as `IMPORTED` (name may be blank). Login with an IMPORTED Bank ID shows a claim message — register with that Bank ID to attach history, then wait for admin approval. Officer KPIs / never-attended lists count **ACTIVE** USER accounts only.
+
 ### Where admin “adds things” for forms
 
 - **Master Data** — dropdown values (types, institutions, roles, completion statuses)
@@ -120,11 +122,15 @@ Self-registered officers start as `PENDING` and cannot log in until an Admin app
 | `/app/training/new` | Record participation |
 | `/admin` | Department admin dashboard |
 | `/admin/admins` | Super admin only — create/list admin accounts |
+| `/admin/import` | Historical CSV upload (Bank No required; dates D/M/YYYY) |
 | `/admin/analytics/compare` | Compare two officers (sidebar **Compare** only) |
-| `/admin/users` | Officers (create USER accounts only) |
+| `/admin/users` | Officers (USER; IMPORTED = awaiting claim) |
 | `/admin/training-programs` | Yellow-field programme master |
+| `/admin/master-data` | Types, institutions, roles, completion statuses |
 | `/admin/records` | Review workflow |
 | `/admin/reports` | Register, officer activity, summaries, Excel/CSV downloads |
+| `/admin/audit` | Audit log |
+| `/admin/settings` | Department settings |
 
 ## KPI definitions
 
@@ -133,7 +139,7 @@ Self-registered officers start as `PENDING` and cannot log in until an Admin app
 - **Completed Trainings** = completion status named `Completed`
 - **Completion Rate** = Completed / (Completed + Not Completed). Planned and Ongoing records are excluded from the denominator.
 
-Admin total record cards distinguish **all database records including drafts** from **submitted records**. **Officers with no training** counts USER accounts that have no submitted (non-draft) participation records.
+Admin total record cards distinguish **all database records including drafts** from **submitted records**. **Officers with no training** counts **ACTIVE** USER accounts that have no submitted (non-draft) participation records (IMPORTED placeholders are excluded).
 
 Admin reports can be downloaded as Excel and CSV: Training Register, Officer Activity, Officer Summary, Programme Summary, Institution Summary, Users, and the current Participation Records filter.
 

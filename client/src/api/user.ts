@@ -1,30 +1,34 @@
 import { api, toQuery } from "./client";
 import type { NamedEntity, Paginated, Participation, TrainingProgram } from "@/types";
 
+export type UserDashboard = {
+  filters: { year: number | null; locationScope: string | null; deliveryMode: string | null };
+  kpis: {
+    total: number;
+    draft: number;
+    pendingReview: number;
+    approved: number;
+    completed: number;
+    local: number;
+    foreign: number;
+    physical: number;
+    online: number;
+    hybrid: number;
+    attended: number;
+  };
+  distributions: {
+    locationScope: { name: string; count: number }[];
+    deliveryMode: { name: string; count: number }[];
+    completionStatus: { name: string; count: number }[];
+    participationRole: { name: string; count: number }[];
+  };
+  yearly: Array<{ year: number; label: string; total: number; local: number; foreign: number }>;
+  recent: Participation[];
+};
+
 export const userApi = {
-  dashboard: () =>
-    api<{
-      kpis: {
-        total: number;
-        draft: number;
-        pendingReview: number;
-        approved: number;
-        completed: number;
-        local: number;
-        foreign: number;
-        physical: number;
-        online: number;
-        hybrid: number;
-        attended: number;
-      };
-      distributions: {
-        locationScope: { name: string; count: number }[];
-        deliveryMode: { name: string; count: number }[];
-        completionStatus: { name: string; count: number }[];
-        participationRole: { name: string; count: number }[];
-      };
-      recent: Participation[];
-    }>("/user/dashboard"),
+  dashboard: (params: Record<string, string | number | undefined> = {}) =>
+    api<UserDashboard>(`/user/dashboard${toQuery(params)}`),
   lookups: () =>
     api<{
       trainingTypes: NamedEntity[];

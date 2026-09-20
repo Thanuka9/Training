@@ -10,6 +10,7 @@ import * as reportService from "../services/reportService.js";
 import * as auditService from "../services/auditService.js";
 import * as settingsService from "../services/settingsService.js";
 import * as masterData from "../services/masterDataService.js";
+import * as historicalImport from "../services/historicalImportService.js";
 import { trainingProgramSchema, updateTrainingProgramSchema } from "../validators/program.js";
 import {
   namedMasterSchema,
@@ -301,4 +302,18 @@ export async function updateSettings(req: Request, res: Response) {
   const actor = requireAuth(req);
   const input = settingsSchema.parse(req.body);
   return sendSuccess(res, await settingsService.updateSettings(input.allowHybridDelivery, actor.id, req));
+}
+
+export async function importHistorical(req: Request, res: Response) {
+  const actor = requireAuth(req);
+  const csvText =
+    typeof req.body === "string"
+      ? req.body
+      : typeof req.body?.csv === "string"
+        ? req.body.csv
+        : "";
+  if (!csvText.trim()) {
+    throw validationError("Upload a CSV file in the historical register format");
+  }
+  return sendSuccess(res, await historicalImport.importHistoricalCsv(csvText, actor, req));
 }

@@ -121,8 +121,8 @@ export function AdminDashboardPage() {
         title="Admin Dashboard"
         description="Department-wide training activity. Drafts are excluded from submitted metrics."
         actions={
-          <Link to="/admin/users">
-            <Button variant="secondary">Officer dashboards</Button>
+          <Link to="/admin/users?role=USER">
+            <Button variant="secondary">Browse officers</Button>
           </Link>
         }
       />

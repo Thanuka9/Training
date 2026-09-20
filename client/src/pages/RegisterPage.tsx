@@ -17,6 +17,7 @@ export function RegisterPage() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [pending, setPending] = useState(false);
   const [done, setDone] = useState("");
+  const [claimedImported, setClaimedImported] = useState(false);
   const [padDialog, setPadDialog] = useState<{ before: string; after: string; resumeSubmit: boolean } | null>(null);
   const acknowledgedPadRef = useRef<string | null>(null);
 
@@ -49,7 +50,8 @@ export function RegisterPage() {
         confirmPassword,
       });
       setDone(result.message);
-      toast.success("Registration submitted");
+      setClaimedImported(Boolean(result.claimedImported));
+      toast.success(result.claimedImported ? "Historical records linked — pending approval" : "Registration submitted");
     } catch (error) {
       toast.error(error instanceof ApiRequestError ? error.message : "Registration failed");
     } finally {
@@ -91,6 +93,11 @@ export function RegisterPage() {
         <CardContent>
           {done ? (
             <div className="space-y-4 text-sm text-slate-700">
+              {claimedImported ? (
+                <div className="rounded-md border border-emerald-200 bg-emerald-50 p-3 text-emerald-950">
+                  Historical training records for this Bank ID are already linked to your account.
+                </div>
+              ) : null}
               <p>{done}</p>
               <Link to="/login" className="font-medium text-navy underline">
                 Return to login
@@ -98,6 +105,10 @@ export function RegisterPage() {
             </div>
           ) : (
             <form className="space-y-4" onSubmit={onSubmit}>
+              <p className="rounded-md border border-slate-200 bg-slate-50 p-3 text-xs text-slate-600">
+                If your Bank ID already has imported historical records, registering here claims that account and keeps those
+                trainings. An administrator must still approve login.
+              </p>
               <div>
                 <Label htmlFor="fullName">Full Name</Label>
                 <Input id="fullName" autoComplete="name" value={fullName} onChange={(e) => setFullName(e.target.value)} required minLength={2} />

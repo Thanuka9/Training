@@ -21,6 +21,7 @@ import { AdminSettingsPage } from "@/pages/admin/AdminSettingsPage";
 import { AdminOfficerDashboardPage } from "@/pages/admin/AdminOfficerDashboardPage";
 import { AdminComparePage } from "@/pages/admin/AdminComparePage";
 import { AdminAdminsPage } from "@/pages/admin/AdminAdminsPage";
+import { AdminImportPage } from "@/pages/admin/AdminImportPage";
 
 export default function App() {
   return (
@@ -47,6 +48,7 @@ export default function App() {
             <Route element={<AdminLayout />}>
               <Route path="/admin" element={<AdminDashboardPage />} />
               <Route path="/admin/admins" element={<AdminAdminsPage />} />
+              <Route path="/admin/import" element={<AdminImportPage />} />
               <Route path="/admin/users" element={<AdminUsersPage />} />
               <Route path="/admin/users/:id/dashboard" element={<AdminOfficerDashboardPage />} />
               <Route path="/admin/analytics/compare" element={<AdminComparePage />} />
