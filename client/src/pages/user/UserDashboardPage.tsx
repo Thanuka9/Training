@@ -48,16 +48,16 @@ export function UserDashboardPage() {
   const data = query.data;
   const refreshing = query.isFetching && Boolean(data);
   const yearLabel = filters.year || "all years";
-  const yearEmpty = Boolean(data) && !refreshing && (data?.kpis.attended ?? 0) === 0 && (data?.kpis.draft ?? 0) === 0;
+  const yearEmpty = Boolean(data) && !refreshing && (data?.kpis.attended ?? 0) === 0;
 
   const primaryKpis = useMemo(
     () => [
-      { label: "Attended", value: data?.kpis.attended, hint: "Submitted (excl. drafts)" },
-      { label: "Completed", value: data?.kpis.completed },
-      { label: "Pending review", value: data?.kpis.pendingReview },
-      { label: "Drafts", value: data?.kpis.draft },
+      { label: "Attended", value: data?.kpis.attended, hint: "Submitted (excl. drafts)", href: `/app/training?year=${filters.year}` },
+      { label: "Completed", value: data?.kpis.completed, href: `/app/training?year=${filters.year}` },
+      { label: "Pending review", value: data?.kpis.pendingReview, hint: "All years", href: "/app/training?workflowStatus=SUBMITTED" },
+      { label: "Drafts", value: data?.kpis.draft, hint: "All years", href: "/app/training?workflowStatus=DRAFT" },
     ],
-    [data],
+    [data, filters.year],
   );
 
   return (
@@ -125,10 +125,10 @@ export function UserDashboardPage() {
               <>Refreshing for {yearLabel}…</>
             ) : (
               <>
-                Showing your records for <strong>{yearLabel}</strong>
+                Showing attendance KPIs for <strong>{yearLabel}</strong>
                 {filters.locationScope ? ` · ${filters.locationScope === "LOCAL" ? "Local" : "Foreign"}` : ""}
                 {filters.deliveryMode ? ` · ${deliveryLabel(filters.deliveryMode as "PHYSICAL" | "ONLINE" | "HYBRID")}` : ""}
-                . Year-wise chart always shows your full history.
+                . Drafts and pending review counts include all years. Year-wise chart always shows your full history.
               </>
             )}
           </p>
@@ -145,7 +145,9 @@ export function UserDashboardPage() {
       <div className={cn("space-y-6 transition-opacity", refreshing ? "opacity-60" : "opacity-100")}>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {primaryKpis.map((item) => (
-            <KpiCard key={item.label} label={item.label} value={item.value ?? "—"} hint={item.hint} />
+            <Link key={item.label} to={item.href ?? "/app/training"} className="block">
+              <KpiCard label={item.label} value={item.value ?? "—"} hint={item.hint} />
+            </Link>
           ))}
         </div>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">

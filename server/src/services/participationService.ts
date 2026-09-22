@@ -132,7 +132,7 @@ export async function getUserDashboard(userId: string, query: Record<string, unk
     ...modeFilter,
   };
 
-  const [all, allForYears] = await Promise.all([
+  const [all, allForYears, pendingGlobal, draftGlobal] = await Promise.all([
     prisma.trainingParticipation.findMany({
       where,
       include: {
@@ -146,6 +146,9 @@ export async function getUserDashboard(userId: string, query: Record<string, unk
       include: { trainingProgram: { select: { locationScope: true } } },
       orderBy: { fromDate: "asc" },
     }),
+    // Workflow queues stay global so year filters do not hide open drafts / pending reviews.
+    prisma.trainingParticipation.count({ where: { userId, workflowStatus: "SUBMITTED" } }),
+    prisma.trainingParticipation.count({ where: { userId, workflowStatus: "DRAFT" } }),
   ]);
 
   const recent = await prisma.trainingParticipation.findMany({
@@ -184,8 +187,8 @@ export async function getUserDashboard(userId: string, query: Record<string, unk
     },
     kpis: {
       total: all.length,
-      draft: all.filter((item) => item.workflowStatus === "DRAFT").length,
-      pendingReview: all.filter((item) => item.workflowStatus === "SUBMITTED").length,
+      draft: draftGlobal,
+      pendingReview: pendingGlobal,
       approved: all.filter((item) => item.workflowStatus === "APPROVED").length,
       completed: attended.filter((item) => item.completionStatus.name === "Completed").length,
       local: attended.filter((item) => item.trainingProgram.locationScope === "LOCAL").length,
@@ -494,13 +497,17 @@ export function buildAdminParticipationWhere(query: Record<string, unknown>) {
 export async function listAdminParticipations(query: Record<string, unknown>) {
   const { skip, take, page, pageSize, sortDirection } = parsePagination(query);
   const where = buildAdminParticipationWhere(query);
+  const orderBy =
+    query.workflowStatus === "SUBMITTED"
+      ? { submittedAt: sortDirection }
+      : { updatedAt: sortDirection };
   const [items, total] = await prisma.$transaction([
     prisma.trainingParticipation.findMany({
       where,
       include: participationInclude,
       skip,
       take,
-      orderBy: { updatedAt: sortDirection },
+      orderBy,
     }),
     prisma.trainingParticipation.count({ where }),
   ]);

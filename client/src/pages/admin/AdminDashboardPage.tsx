@@ -101,18 +101,18 @@ export function AdminDashboardPage() {
       ["Officers with training", kpis.officersWithTraining, "/admin/users?neverAttended=false"],
       ["Officers with no training", kpis.officersNeverAttended, "/admin/users?neverAttended=true"],
       ["Total Training Programs", kpis.totalPrograms, "/admin/training-programs"],
-      ["Participation records", kpis.totalSubmittedRecords, "/admin/records"],
+      ["Participation records", kpis.totalSubmittedRecords, `/admin/records?year=${filters.year ?? ""}`],
       ["Pending Reviews", kpis.pendingReviews, "/admin/records?workflowStatus=SUBMITTED"],
-      ["Approved Records", kpis.approvedRecords, "/admin/records?workflowStatus=APPROVED"],
-      ["Completed Trainings", kpis.completedTrainings, "/admin/records"],
+      ["Approved Records", kpis.approvedRecords, `/admin/records?workflowStatus=APPROVED&year=${filters.year ?? ""}`],
+      ["Completed Trainings", kpis.completedTrainings, `/admin/records?year=${filters.year ?? ""}`],
       ["Completion Rate", kpis.completionRate != null ? `${kpis.completionRate}%` : "—", "/admin/reports"],
-      ["Local Trainings", kpis.localTrainings, "/admin/records?locationScope=LOCAL"],
-      ["Foreign Trainings", kpis.foreignTrainings, "/admin/records?locationScope=FOREIGN"],
-      ["Physical Trainings", kpis.physicalTrainings, "/admin/records?deliveryMode=PHYSICAL"],
-      ["Online Trainings", kpis.onlineTrainings, "/admin/records?deliveryMode=ONLINE"],
-      ["Hybrid Trainings", kpis.hybridTrainings, "/admin/records?deliveryMode=HYBRID"],
+      ["Local Trainings", kpis.localTrainings, `/admin/records?locationScope=LOCAL&year=${filters.year ?? ""}`],
+      ["Foreign Trainings", kpis.foreignTrainings, `/admin/records?locationScope=FOREIGN&year=${filters.year ?? ""}`],
+      ["Physical Trainings", kpis.physicalTrainings, `/admin/records?deliveryMode=PHYSICAL&year=${filters.year ?? ""}`],
+      ["Online Trainings", kpis.onlineTrainings, `/admin/records?deliveryMode=ONLINE&year=${filters.year ?? ""}`],
+      ["Hybrid Trainings", kpis.hybridTrainings, `/admin/records?deliveryMode=HYBRID&year=${filters.year ?? ""}`],
     ],
-    [kpis],
+    [kpis, filters.year],
   );
 
   return (
@@ -198,7 +198,8 @@ export function AdminDashboardPage() {
             </Button>
             {refreshing ? <span className="text-xs text-slate-500">Refreshing charts for {filters.year}…</span> : null}
             <span className="text-xs text-slate-500">
-              Training KPIs and charts reload for year <strong>{filters.year}</strong>. User / programme totals stay global.
+              Training KPIs and charts reload for year <strong>{filters.year}</strong>. Pending Reviews stay global so new
+              submissions always appear. User / programme totals stay global.
             </span>
           </div>
         </CardContent>
@@ -465,10 +466,14 @@ export function AdminDashboardPage() {
 
       <div className="grid gap-4 xl:grid-cols-2">
         <Card>
-          <CardHeader>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0">
             <CardTitle>Pending Reviews</CardTitle>
+            <Button size="sm" variant="secondary" onClick={() => navigate("/admin/records?workflowStatus=SUBMITTED")}>
+              Open queue
+            </Button>
           </CardHeader>
           <CardContent>
+            <p className="mb-3 text-xs text-slate-500">All years — not limited by the dashboard year filter.</p>
             <ul className="space-y-2 text-sm">
               {((summary.data?.pendingReviewsList as Array<{ id: string; officer: string; program: string }> | undefined) ?? []).map((item) => (
                 <li key={item.id}>

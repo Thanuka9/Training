@@ -14,6 +14,14 @@ export async function getDashboardSummary(query: Record<string, unknown>) {
   const base = buildAdminParticipationWhere(query);
   const submitted = submittedWhere(base);
 
+  const pendingWhere: Prisma.TrainingParticipationWhereInput = {
+    workflowStatus: "SUBMITTED",
+    ...(query.locationScope
+      ? { trainingProgram: { locationScope: String(query.locationScope) } }
+      : {}),
+    ...(query.deliveryMode ? { deliveryMode: String(query.deliveryMode) } : {}),
+  };
+
   const [
     activeUsers,
     pendingRegistrations,
@@ -36,9 +44,8 @@ export async function getDashboardSummary(query: Record<string, unknown>) {
     prisma.trainingProgram.count({ where: { active: true } }),
     prisma.trainingParticipation.count({ where: base }),
     prisma.trainingParticipation.count({ where: submitted }),
-    prisma.trainingParticipation.count({
-      where: { ...base, workflowStatus: "SUBMITTED" },
-    }),
+    // Pending reviews are always global (not year-scoped) so new submissions stay visible.
+    prisma.trainingParticipation.count({ where: pendingWhere }),
     prisma.trainingParticipation.count({
       where: { ...base, workflowStatus: "APPROVED" },
     }),
@@ -67,7 +74,7 @@ export async function getDashboardSummary(query: Record<string, unknown>) {
   ]);
 
   const pendingRecords = await prisma.trainingParticipation.findMany({
-    where: { ...base, workflowStatus: "SUBMITTED" },
+    where: pendingWhere,
     include: {
       user: { select: { fullName: true, bankId: true } },
       trainingProgram: { select: { name: true } },

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { userApi } from "@/api/user";
 import { ApiRequestError } from "@/api/client";
@@ -13,7 +13,9 @@ import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { ConfirmDialog } from "@/components/ui/dialog";
+import { SearchableSelect } from "@/components/ui/searchable-select";
 import { locationLabel } from "@/lib/format";
+import { useDebouncedValue } from "@/lib/useDebouncedValue";
 import type { TrainingProgram } from "@/types";
 
 function iso(value?: string) {
@@ -24,9 +26,12 @@ export function ParticipationFormPage() {
   const { id } = useParams();
   const isEdit = Boolean(id);
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { user } = useAuth();
   const [search, setSearch] = useState("");
+  const debouncedSearch = useDebouncedValue(search.trim(), 250);
   const [programId, setProgramId] = useState("");
+  const [selectedProgram, setSelectedProgram] = useState<TrainingProgram | null>(null);
   const [deliveryMode, setDeliveryMode] = useState("PHYSICAL");
   const [roleId, setRoleId] = useState("");
   const [fromDate, setFromDate] = useState("");
@@ -35,11 +40,17 @@ export function ParticipationFormPage() {
   const [remarks, setRemarks] = useState("");
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [pendingAction, setPendingAction] = useState<"draft" | "submit" | null>(null);
+  const [saving, setSaving] = useState(false);
 
   const lookups = useQuery({ queryKey: ["lookups"], queryFn: userApi.lookups });
   const programs = useQuery({
-    queryKey: ["user-programs", search],
-    queryFn: () => userApi.programs({ search, pageSize: 50 }),
+    queryKey: ["user-programs", debouncedSearch],
+    queryFn: () =>
+      userApi.programs({
+        search: debouncedSearch || undefined,
+        pageSize: 300,
+        active: "true",
+      }),
   });
   const existing = useQuery({
     queryKey: ["my-participation", id],
@@ -51,20 +62,27 @@ export function ParticipationFormPage() {
     const record = existing.data;
     if (!record) return;
     setProgramId(record.trainingProgram.id);
+    setSelectedProgram(record.trainingProgram);
     setDeliveryMode(record.deliveryMode);
     setRoleId(record.participationRole.id);
     setFromDate(iso(record.fromDate));
     setToDate(iso(record.toDate));
     setCompletionId(record.completionStatus.id);
     setRemarks(record.remarks ?? "");
+    setSearch(record.trainingProgram.name);
   }, [existing.data]);
 
-  const selectedProgram: TrainingProgram | undefined = useMemo(() => {
-    return (
-      programs.data?.items.find((item) => item.id === programId) ||
-      existing.data?.trainingProgram
-    );
-  }, [programId, programs.data, existing.data]);
+  const programOptions = useMemo(() => {
+    const items = [...(programs.data?.items ?? [])];
+    const q = search.trim().toLowerCase();
+    // Local filter while typing (before debounce catches up with the API).
+    const filtered =
+      q && debouncedSearch !== search.trim() ? items.filter((item) => matchesProgram(item, q)) : items;
+    if (selectedProgram && !filtered.some((item) => item.id === selectedProgram.id)) {
+      filtered.unshift(selectedProgram);
+    }
+    return filtered;
+  }, [programs.data, search, debouncedSearch, selectedProgram]);
 
   const deliveryOptions = lookups.data?.allowHybridDelivery
     ? ["PHYSICAL", "ONLINE", "HYBRID"]
@@ -75,6 +93,15 @@ export function ParticipationFormPage() {
     : false;
 
   async function save(submit: boolean, confirmDuplicate = false) {
+    if (!programId) {
+      toast.error("Select a training programme");
+      return;
+    }
+    if (!roleId || !completionId || !fromDate || !toDate) {
+      toast.error("Fill participation role, dates, and completion status");
+      return;
+    }
+
     const payload = {
       trainingProgramId: programId,
       deliveryMode,
@@ -86,17 +113,20 @@ export function ParticipationFormPage() {
       confirmDuplicate,
     };
 
+    setSaving(true);
     try {
       const record = isEdit
         ? await userApi.updateParticipation(id!, payload)
         : await userApi.createParticipation(payload);
       if (submit) {
         await userApi.submitParticipation(record.id);
-        toast.success("Record submitted for review");
+        toast.success("Submitted for admin review — visible under Participation Records → Pending Review");
       } else {
         toast.success("Draft saved");
       }
-      navigate("/app/training");
+      await queryClient.invalidateQueries({ queryKey: ["my-training"] });
+      await queryClient.invalidateQueries({ queryKey: ["user-dashboard"] });
+      navigate(submit ? "/app/training?workflowStatus=SUBMITTED" : "/app/training");
     } catch (error) {
       if (error instanceof ApiRequestError && error.code === "DUPLICATE_PARTICIPATION") {
         setPendingAction(submit ? "submit" : "draft");
@@ -104,6 +134,8 @@ export function ParticipationFormPage() {
         return;
       }
       toast.error(error instanceof Error ? error.message : "Unable to save record");
+    } finally {
+      setSaving(false);
     }
   }
 
@@ -111,13 +143,14 @@ export function ParticipationFormPage() {
     <div className="space-y-5">
       <PageHeader
         title={isEdit ? "Training Record" : "Add Training Record"}
-        description="Record your participation in an existing training programme."
+        description="Choose a programme, then enter your participation details. Submit sends it to administrators for review."
       />
       {existing.data?.workflowStatus === "RETURNED" && existing.data.adminComment ? (
         <div className="rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-950">
           Returned for correction: {existing.data.adminComment}
         </div>
       ) : null}
+
       <Card>
         <CardHeader>
           <CardTitle>Officer</CardTitle>
@@ -133,31 +166,50 @@ export function ParticipationFormPage() {
           </div>
         </CardContent>
       </Card>
+
       <Card>
         <CardHeader>
-          <CardTitle>Step 1 – Select Training Program</CardTitle>
+          <CardTitle>Training programme</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
-            <Label htmlFor="programSearch">Search programmes</Label>
-            <Input
-              id="programSearch"
-              placeholder="Programme name or institution"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
+            <Label htmlFor="program">Programme</Label>
+            <SearchableSelect
+              id="program"
+              value={programId}
+              options={programOptions.map((item) => ({
+                id: item.id,
+                label: item.name,
+                description: `${item.institution.name} · ${item.trainingType.name}${item.venue ? ` · ${item.venue}` : ""}`,
+              }))}
+              searchValue={search}
+              onSearchChange={setSearch}
+              onChange={(nextId) => {
+                setProgramId(nextId);
+                if (!nextId) {
+                  setSelectedProgram(null);
+                  setSearch("");
+                  return;
+                }
+                const chosen = programOptions.find((item) => item.id === nextId) ?? null;
+                setSelectedProgram(chosen);
+                if (chosen) setSearch(chosen.name);
+              }}
               disabled={locked}
+              loading={programs.isLoading || programs.isFetching}
+              placeholder={programs.isLoading ? "Loading programmes…" : "Search and select a programme"}
+              searchPlaceholder="Type programme, institution, type or venue"
+              emptyMessage={debouncedSearch ? "No programmes match that search" : "No active programmes"}
             />
-          </div>
-          <div>
-            <Label htmlFor="program">Training Program</Label>
-            <Select id="program" value={programId} onChange={(e) => setProgramId(e.target.value)} disabled={locked} required>
-              <option value="">Select a programme</option>
-              {(programs.data?.items ?? (selectedProgram ? [selectedProgram] : [])).map((item) => (
-                <option key={item.id} value={item.id}>
-                  {item.name} — {item.institution.name}
-                </option>
-              ))}
-            </Select>
+            <p className="mt-1.5 text-xs text-muted">
+              {programs.isFetching
+                ? "Searching…"
+                : programs.data
+                  ? debouncedSearch
+                    ? `${programOptions.length} match${programOptions.length === 1 ? "" : "es"}`
+                    : `${Math.min(programOptions.length, programs.data.total)} of ${programs.data.total} programmes`
+                  : null}
+            </p>
           </div>
           {selectedProgram ? (
             <div className="grid gap-4 rounded-lg border border-gold/40 bg-[#fbf7ee] p-4 sm:grid-cols-2">
@@ -172,13 +224,14 @@ export function ParticipationFormPage() {
               <ReadOnly label="Description" value={selectedProgram.description?.trim() || "—"} />
             </div>
           ) : (
-            <p className="text-sm text-slate-500">Programme details will appear after selection.</p>
+            <p className="text-sm text-slate-500">Open the dropdown and type to find a programme.</p>
           )}
         </CardContent>
       </Card>
+
       <Card>
         <CardHeader>
-          <CardTitle>Step 2 – Participation Details</CardTitle>
+          <CardTitle>Participation details</CardTitle>
         </CardHeader>
         <CardContent className="grid gap-4 sm:grid-cols-2">
           <div>
@@ -193,7 +246,7 @@ export function ParticipationFormPage() {
           </div>
           <div>
             <Label htmlFor="role">Participating the Training as</Label>
-            <Select id="role" value={roleId} onChange={(e) => setRoleId(e.target.value)} disabled={locked}>
+            <Select id="role" value={roleId} onChange={(e) => setRoleId(e.target.value)} disabled={locked} required>
               <option value="">Select</option>
               {lookups.data?.participationRoles.map((item) => (
                 <option key={item.id} value={item.id}>
@@ -212,7 +265,13 @@ export function ParticipationFormPage() {
           </div>
           <div>
             <Label htmlFor="completion">Status of Completion</Label>
-            <Select id="completion" value={completionId} onChange={(e) => setCompletionId(e.target.value)} disabled={locked}>
+            <Select
+              id="completion"
+              value={completionId}
+              onChange={(e) => setCompletionId(e.target.value)}
+              disabled={locked}
+              required
+            >
               <option value="">Select</option>
               {lookups.data?.completionStatuses.map((item) => (
                 <option key={item.id} value={item.id}>
@@ -227,12 +286,15 @@ export function ParticipationFormPage() {
           </div>
         </CardContent>
       </Card>
+
       <div className="flex flex-wrap gap-2">
         {!locked ? (
           <>
-            <Button onClick={() => void save(false)}>Save Draft</Button>
-            <Button variant="gold" onClick={() => void save(true)}>
-              Submit
+            <Button disabled={saving} onClick={() => void save(false)}>
+              {saving ? "Saving…" : "Save Draft"}
+            </Button>
+            <Button variant="gold" disabled={saving} onClick={() => void save(true)}>
+              {saving ? "Submitting…" : "Submit for review"}
             </Button>
           </>
         ) : null}
@@ -240,6 +302,7 @@ export function ParticipationFormPage() {
           <Button variant="secondary">Cancel</Button>
         </Link>
       </div>
+
       <ConfirmDialog
         open={confirmOpen}
         title="Possible duplicate"
@@ -253,6 +316,13 @@ export function ParticipationFormPage() {
       />
     </div>
   );
+}
+
+function matchesProgram(item: TrainingProgram, q: string) {
+  return [item.name, item.institution.name, item.trainingType.name, item.venue, item.description ?? ""]
+    .join(" ")
+    .toLowerCase()
+    .includes(q);
 }
 
 function ReadOnly({ label, value }: { label: string; value: string }) {

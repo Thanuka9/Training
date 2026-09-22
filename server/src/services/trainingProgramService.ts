@@ -63,7 +63,7 @@ async function resolveInstitutionId(
 }
 
 export async function listPrograms(query: Record<string, unknown>, activeOnly = false) {
-  const { skip, take, page, pageSize, search, sortDirection } = parsePagination(query);
+  const { skip, take, page, pageSize, search } = parsePagination(query);
   const where: Prisma.TrainingProgramWhereInput = {
     ...(activeOnly || query.active === "true" ? { active: true } : {}),
     ...(query.active === "false" ? { active: false } : {}),
@@ -76,6 +76,8 @@ export async function listPrograms(query: Record<string, unknown>, activeOnly = 
             { name: { contains: search } },
             { venue: { contains: search } },
             { institution: { name: { contains: search } } },
+            { trainingType: { name: { contains: search } } },
+            { description: { contains: search } },
           ],
         }
       : {}),
@@ -87,7 +89,7 @@ export async function listPrograms(query: Record<string, unknown>, activeOnly = 
       include: programInclude,
       skip,
       take,
-      orderBy: { name: sortDirection },
+      orderBy: { name: "asc" },
     }),
     prisma.trainingProgram.count({ where }),
   ]);

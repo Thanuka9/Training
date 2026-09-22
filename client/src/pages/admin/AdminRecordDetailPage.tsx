@@ -53,6 +53,8 @@ export function AdminRecordDetailPage() {
       if (kind === "reject") await adminApi.rejectParticipation(id!, comment);
       toast.success("Workflow updated");
       await queryClient.invalidateQueries({ queryKey: ["admin-record", id] });
+      await queryClient.invalidateQueries({ queryKey: ["admin-records"] });
+      await queryClient.invalidateQueries({ queryKey: ["admin-summary"] });
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Unable to update workflow");
     }
@@ -127,6 +129,8 @@ export function AdminRecordDetailPage() {
                   });
                   toast.success("Correction saved");
                   await queryClient.invalidateQueries({ queryKey: ["admin-record", id] });
+                  await queryClient.invalidateQueries({ queryKey: ["admin-records"] });
+                  await queryClient.invalidateQueries({ queryKey: ["admin-summary"] });
                 } catch (error) {
                   toast.error(error instanceof Error ? error.message : "Unable to save correction");
                 }
