@@ -2,9 +2,12 @@ import { api } from "./client";
 import type { PublicUser } from "@/types";
 
 export const authApi = {
+  registerOptions: () =>
+    api<{ jobPositions: Array<{ id: string; name: string; active: boolean; sortOrder?: number }> }>("/auth/register-options"),
   register: (payload: {
     fullName: string;
     bankId: string;
+    jobPositionId: string;
     password: string;
     confirmPassword: string;
   }) =>

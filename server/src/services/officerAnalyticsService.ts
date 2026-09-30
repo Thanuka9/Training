@@ -61,10 +61,17 @@ async function buildPersonalTrainingDashboard(userId: string) {
 
 /** Officer-only dashboard used by admin compare and user list links. */
 export async function getAdminOfficerDashboard(userId: string) {
-  const user = await prisma.user.findUnique({ where: { id: userId } });
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    include: { jobPosition: true },
+  });
   if (!user) throw notFound("User");
   if (user.role !== "USER") throw validationError("Officer dashboards are only available for USER accounts");
-  return buildPersonalTrainingDashboard(userId);
+  const dashboard = await buildPersonalTrainingDashboard(userId);
+  return {
+    ...dashboard,
+    user: toPublicUser(user),
+  };
 }
 
 export async function getOfficerRankings(query: Record<string, unknown>) {
@@ -153,6 +160,77 @@ export async function getYearlyTraining(query: Record<string, unknown>) {
     deliveryMode: query.deliveryMode ? String(query.deliveryMode) : null,
     years: [...byYear.values()],
   };
+}
+
+/** Trainings and attendance by job position for the admin dashboard chart. */
+export async function getTrainingsByPosition(query: Record<string, unknown>) {
+  const year = Number(query.year) || new Date().getUTCFullYear();
+  const from = new Date(Date.UTC(year, 0, 1));
+  const to = new Date(Date.UTC(year + 1, 0, 1));
+
+  const [positions, officers, participations] = await Promise.all([
+    prisma.jobPosition.findMany({
+      where: { active: true },
+      orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
+    }),
+    prisma.user.findMany({
+      where: { role: "USER", status: "ACTIVE" },
+      select: { id: true, jobPositionId: true },
+    }),
+    prisma.trainingParticipation.findMany({
+      where: {
+        workflowStatus: { not: "DRAFT" },
+        fromDate: { gte: from, lt: to },
+        user: { role: "USER", status: "ACTIVE" },
+      },
+      select: { userId: true },
+    }),
+  ]);
+
+  const trainingCountByUser = new Map<string, number>();
+  for (const row of participations) {
+    trainingCountByUser.set(row.userId, (trainingCountByUser.get(row.userId) ?? 0) + 1);
+  }
+
+  const rows = positions.map((position) => {
+    const inPosition = officers.filter((officer) => officer.jobPositionId === position.id);
+    let trainings = 0;
+    let withTraining = 0;
+    for (const officer of inPosition) {
+      const count = trainingCountByUser.get(officer.id) ?? 0;
+      trainings += count;
+      if (count > 0) withTraining += 1;
+    }
+    return {
+      id: position.id,
+      label: position.name,
+      trainings,
+      withTraining,
+      withoutTraining: Math.max(inPosition.length - withTraining, 0),
+      officers: inPosition.length,
+    };
+  });
+
+  const unassigned = officers.filter((officer) => !officer.jobPositionId);
+  if (unassigned.length) {
+    let trainings = 0;
+    let withTraining = 0;
+    for (const officer of unassigned) {
+      const count = trainingCountByUser.get(officer.id) ?? 0;
+      trainings += count;
+      if (count > 0) withTraining += 1;
+    }
+    rows.push({
+      id: "unassigned",
+      label: "No position set",
+      trainings,
+      withTraining,
+      withoutTraining: Math.max(unassigned.length - withTraining, 0),
+      officers: unassigned.length,
+    });
+  }
+
+  return { year, rows };
 }
 
 export async function compareOfficers(userIdA: string, userIdB: string) {

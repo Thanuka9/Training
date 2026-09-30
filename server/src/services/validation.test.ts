@@ -35,6 +35,7 @@ describe("registration validation", () => {
     const result = registerSchema.safeParse({
       fullName: "Nimal Perera",
       bankId: "BSD001",
+      jobPositionId: "11111111-1111-4111-8111-111111111111",
       password: "SecurePass1",
       confirmPassword: "SecurePass1",
     });
@@ -45,6 +46,7 @@ describe("registration validation", () => {
     const registered = registerSchema.safeParse({
       fullName: "Nimal Perera",
       bankId: "12",
+      jobPositionId: "11111111-1111-4111-8111-111111111111",
       password: "SecurePass1",
       confirmPassword: "SecurePass1",
     });

@@ -39,7 +39,7 @@ export function KpiCard({
       role={onClick ? "button" : undefined}
     >
       <span className="absolute inset-x-0 top-0 h-0.5 bg-gold" />
-      <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted">{label}</p>
+      <p className="text-[13px] font-bold uppercase tracking-[0.06em] text-navy">{label}</p>
       <p className="mt-2 font-serif text-3xl font-semibold text-navy">{value}</p>
       {hint ? <p className="mt-1 text-xs text-muted">{hint}</p> : null}
     </Card>

@@ -49,3 +49,100 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 table tbody tr:hover td {
   background: rgba(18, 53, 91, 0.035);
 }
+
+@media print {
+  @page {
+    size: A4;
+    margin: 10mm;
+  }
+
+  html,
+  body,
+  #root {
+    background: white !important;
+    color: #0f172a !important;
+    height: auto !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+  }
+
+  .print\:hidden,
+  header,
+  nav,
+  aside,
+  [data-sonner-toaster] {
+    display: none !important;
+  }
+
+  .officer-print-root {
+    max-width: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    overflow: visible !important;
+  }
+
+  .officer-print-root,
+  .officer-print-root * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .print-cover {
+    display: block !important;
+    margin-bottom: 14px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #12355b;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .print-kicker {
+    margin: 0 0 6px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #12355b;
+  }
+
+  .print-title {
+    margin: 0;
+    font-family: var(--font-serif);
+    font-size: 26px;
+    line-height: 1.2;
+    color: #0f172a;
+  }
+
+  .print-meta {
+    margin: 4px 0 0;
+    font-size: 12px;
+    color: #475569;
+  }
+
+  .print-keep {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .recharts-responsive-container {
+    width: 100% !important;
+    min-height: 220px !important;
+  }
+
+  .recharts-wrapper,
+  .recharts-surface {
+    max-width: 100% !important;
+  }
+
+  .officer-print-root .shadow-sm,
+  .officer-print-root .shadow,
+  .officer-print-root .shadow-md,
+  .officer-print-root .shadow-lg {
+    box-shadow: none !important;
+  }
+
+  .officer-print-root a {
+    text-decoration: none !important;
+    color: inherit !important;
+  }
+}

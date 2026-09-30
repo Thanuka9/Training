@@ -10,6 +10,8 @@ export type PublicUser = {
   fullName: string;
   role: Role;
   status: UserStatus;
+  jobPositionId?: string | null;
+  jobPosition?: { id: string; name: string } | null;
   lastLoginAt: string | null;
   createdAt: string;
   updatedAt: string;

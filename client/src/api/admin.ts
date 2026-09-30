@@ -35,6 +35,7 @@ export const adminApi = {
       institutions: NamedEntity[];
       participationRoles: NamedEntity[];
       completionStatuses: NamedEntity[];
+      jobPositions: NamedEntity[];
       allowHybridDelivery: boolean;
     }>("/admin/lookups"),
   summary: (params: FilterParams = {}) => api<Record<string, unknown>>(`/admin/dashboard/summary${toQuery(params)}`),
@@ -78,6 +79,18 @@ export const adminApi = {
       deliveryMode: string | null;
       years: Array<{ year: number; label: string; total: number; local: number; foreign: number }>;
     }>(`/admin/dashboard/yearly${toQuery(params)}`),
+  byPosition: (params: FilterParams = {}) =>
+    api<{
+      year: number;
+      rows: Array<{
+        id: string;
+        label: string;
+        trainings: number;
+        withTraining: number;
+        withoutTraining: number;
+        officers: number;
+      }>;
+    }>(`/admin/dashboard/by-position${toQuery(params)}`),
   compare: (params: FilterParams = {}) =>
     api<{
       a: OfficerDashboard;
@@ -158,6 +171,12 @@ export const adminApi = {
     api<NamedEntity>("/admin/completion-statuses", { method: "POST", body: JSON.stringify(payload) }),
   updateCompletionStatus: (id: string, payload: unknown) =>
     api<NamedEntity>(`/admin/completion-statuses/${id}`, { method: "PUT", body: JSON.stringify(payload) }),
+  jobPositions: (params: FilterParams = {}) =>
+    api<Paginated<NamedEntity>>(`/admin/job-positions${toQuery(params)}`),
+  createJobPosition: (payload: unknown) =>
+    api<NamedEntity>("/admin/job-positions", { method: "POST", body: JSON.stringify(payload) }),
+  updateJobPosition: (id: string, payload: unknown) =>
+    api<NamedEntity>(`/admin/job-positions/${id}`, { method: "PUT", body: JSON.stringify(payload) }),
   trainingRegister: (params: FilterParams = {}) =>
     api<Array<Record<string, unknown>>>(`/admin/reports/training-register${toQuery(params)}`),
   officerSummary: (params: FilterParams = {}) =>

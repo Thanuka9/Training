@@ -22,6 +22,7 @@ export function AdminUsersPage() {
   const [params, setParams] = useSearchParams();
   const [search, setSearch] = useState(params.get("search") ?? "");
   const [createOpen, setCreateOpen] = useState(false);
+  const [editUser, setEditUser] = useState<{ id: string; fullName: string; jobPositionId: string } | null>(null);
   const [confirm, setConfirm] = useState<{ id: string; action: string; title: string; danger?: boolean } | null>(null);
 
   useEffect(() => {
@@ -148,6 +149,7 @@ export function AdminUsersPage() {
                 <tr>
                   <Th>Bank ID</Th>
                   <Th>Full Name</Th>
+                  <Th>Position</Th>
                   <Th>Role</Th>
                   <Th>Account Status</Th>
                   <Th>Attended</Th>
@@ -166,6 +168,7 @@ export function AdminUsersPage() {
                   <tr key={user.id} className={user.neverAttended && user.role === "USER" ? "bg-amber-50/70" : undefined}>
                     <Td>{user.bankId}</Td>
                     <Td>{user.fullName?.trim() ? user.fullName : user.status === "IMPORTED" ? "(Imported — awaiting claim)" : "—"}</Td>
+                    <Td>{user.jobPosition?.name ?? "—"}</Td>
                     <Td>{user.role}</Td>
                     <Td>
                       <Badge
@@ -210,9 +213,23 @@ export function AdminUsersPage() {
                         <button className="text-navy underline" onClick={() => setConfirm({ id: user.id, action: "reactivate", title: "Reactivate this account?" })}>Reactivate</button>
                       ) : null}
                       {user.role === "USER" ? (
-                        <Link className="text-navy underline" to={`/admin/users/${user.id}/dashboard`}>
-                          Dashboard
-                        </Link>
+                        <>
+                          <button
+                            className="text-navy underline"
+                            onClick={() =>
+                              setEditUser({
+                                id: user.id,
+                                fullName: user.fullName,
+                                jobPositionId: user.jobPositionId ?? "",
+                              })
+                            }
+                          >
+                            Edit
+                          </button>
+                          <Link className="text-navy underline" to={`/admin/users/${user.id}/dashboard`}>
+                            Dashboard
+                          </Link>
+                        </>
                       ) : null}
                       {user.status === "IMPORTED" ? (
                         <span className="text-xs text-muted">Awaiting officer registration</span>
@@ -260,6 +277,14 @@ export function AdminUsersPage() {
           await queryClient.invalidateQueries({ queryKey: ["admin-users"] });
         }}
       />
+      <EditUserModal
+        user={editUser}
+        onClose={() => setEditUser(null)}
+        onSaved={async () => {
+          setEditUser(null);
+          await queryClient.invalidateQueries({ queryKey: ["admin-users"] });
+        }}
+      />
       <ConfirmDialog
         open={Boolean(confirm)}
         title={confirm?.title ?? ""}
@@ -284,18 +309,31 @@ function CreateUserModal({
   onClose: () => void;
   onCreated: () => Promise<void>;
 }) {
+  const lookups = useQuery({ queryKey: ["admin-lookups"], queryFn: adminApi.lookups });
   const [fullName, setFullName] = useState("");
   const [bankId, setBankId] = useState("");
+  const [jobPositionId, setJobPositionId] = useState("");
   const [password, setPassword] = useState("");
   const [padDialog, setPadDialog] = useState<{ before: string; after: string; resumeSubmit: boolean } | null>(null);
   const acknowledgedPadRef = useRef<string | null>(null);
 
   async function createUser(normalizedBankId: string) {
+    if (!jobPositionId) {
+      toast.error("Select a job position");
+      return;
+    }
     try {
-      await adminApi.createUser({ fullName, bankId: normalizedBankId, password, status: "ACTIVE" });
+      await adminApi.createUser({
+        fullName,
+        bankId: normalizedBankId,
+        jobPositionId,
+        password,
+        status: "ACTIVE",
+      });
       toast.success("Officer created as active");
       setFullName("");
       setBankId("");
+      setJobPositionId("");
       setPassword("");
       acknowledgedPadRef.current = null;
       await onCreated();
@@ -353,11 +391,24 @@ function CreateUserModal({
             </p>
           </div>
           <div>
+            <Label>Position</Label>
+            <Select value={jobPositionId} onChange={(e) => setJobPositionId(e.target.value)} required>
+              <option value="">Select position</option>
+              {(lookups.data?.jobPositions ?? []).map((item) => (
+                <option key={item.id} value={item.id}>
+                  {item.name}
+                </option>
+              ))}
+            </Select>
+          </div>
+          <div>
             <Label>Temporary password</Label>
             <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={8} />
           </div>
           <div className="flex justify-end gap-2">
-            <Button variant="secondary" onClick={onClose}>Cancel</Button>
+            <Button type="button" variant="secondary" onClick={onClose}>
+              Cancel
+            </Button>
             <Button type="submit">Create</Button>
           </div>
         </form>
@@ -382,5 +433,71 @@ function CreateUserModal({
         onClose={() => setPadDialog(null)}
       />
     </>
+  );
+}
+
+function EditUserModal({
+  user,
+  onClose,
+  onSaved,
+}: {
+  user: { id: string; fullName: string; jobPositionId: string } | null;
+  onClose: () => void;
+  onSaved: () => Promise<void>;
+}) {
+  const lookups = useQuery({ queryKey: ["admin-lookups"], queryFn: adminApi.lookups, enabled: Boolean(user) });
+  const [fullName, setFullName] = useState("");
+  const [jobPositionId, setJobPositionId] = useState("");
+
+  useEffect(() => {
+    if (!user) return;
+    setFullName(user.fullName);
+    setJobPositionId(user.jobPositionId);
+  }, [user]);
+
+  return (
+    <Modal open={Boolean(user)} title="Edit officer" onClose={onClose}>
+      <form
+        className="space-y-3"
+        onSubmit={async (event) => {
+          event.preventDefault();
+          if (!user) return;
+          if (!jobPositionId) {
+            toast.error("Select a job position");
+            return;
+          }
+          try {
+            await adminApi.updateUser(user.id, { fullName, jobPositionId });
+            toast.success("Officer updated");
+            await onSaved();
+          } catch (error) {
+            toast.error(error instanceof Error ? error.message : "Unable to update officer");
+          }
+        }}
+      >
+        <div>
+          <Label>Full Name</Label>
+          <Input value={fullName} onChange={(e) => setFullName(e.target.value)} required />
+        </div>
+        <div>
+          <Label>Position</Label>
+          <Select value={jobPositionId} onChange={(e) => setJobPositionId(e.target.value)} required>
+            <option value="">Select position</option>
+            {(lookups.data?.jobPositions ?? []).map((item) => (
+              <option key={item.id} value={item.id}>
+                {item.name}
+              </option>
+            ))}
+          </Select>
+          <p className="mt-1 text-xs text-muted">Officers cannot change this themselves.</p>
+        </div>
+        <div className="flex justify-end gap-2">
+          <Button type="button" variant="secondary" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button type="submit">Save</Button>
+        </div>
+      </form>
+    </Modal>
   );
 }

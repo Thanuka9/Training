@@ -10,6 +10,7 @@ import type { loginSchema, registerSchema, changePasswordSchema } from "../valid
 import type { z } from "zod";
 import type { Role, UserStatus } from "../types/domain.js";
 import { normalizeBankId } from "../utils/bankId.js";
+import { assertJobPositionId } from "./masterDataService.js";
 
 /** Unusable password for IMPORTED placeholder accounts until the officer registers. */
 export async function unusablePasswordHash() {
@@ -18,6 +19,7 @@ export async function unusablePasswordHash() {
 
 export async function registerUser(input: z.infer<typeof registerSchema>, req: Request) {
   const bankId = normalizeBankId(input.bankId);
+  await assertJobPositionId(input.jobPositionId);
   const existing = await prisma.user.findUnique({ where: { bankId } });
 
   if (existing) {
@@ -28,7 +30,9 @@ export async function registerUser(input: z.infer<typeof registerSchema>, req: R
           fullName: input.fullName.trim(),
           passwordHash: await hashPassword(input.password),
           status: "PENDING",
+          jobPositionId: input.jobPositionId,
         },
+        include: { jobPosition: true },
       });
 
       await writeAuditLog({
@@ -59,7 +63,9 @@ export async function registerUser(input: z.infer<typeof registerSchema>, req: R
       passwordHash: await hashPassword(input.password),
       role: "USER",
       status: "PENDING",
+      jobPositionId: input.jobPositionId,
     },
+    include: { jobPosition: true },
   });
 
   await writeAuditLog({
@@ -112,6 +118,7 @@ export async function loginUser(input: z.infer<typeof loginSchema>, req: Request
   const updated = await prisma.user.update({
     where: { id: user.id },
     data: { lastLoginAt: new Date() },
+    include: { jobPosition: true },
   });
 
   const token = signAuthToken({
@@ -149,7 +156,10 @@ export async function changePassword(
 }
 
 export async function getMe(userId: string) {
-  const user = await prisma.user.findUnique({ where: { id: userId } });
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    include: { jobPosition: true },
+  });
   if (!user) throw unauthorized();
   return toPublicUser(user);
 }

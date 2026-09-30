@@ -301,13 +301,85 @@ export async function updateCompletionStatus(
   }
 }
 
+export async function listJobPositions(query: Record<string, unknown>) {
+  const { skip, take, page, pageSize, search, sortDirection } = parsePagination(query);
+  const where = {
+    ...(search ? { name: { contains: search } } : {}),
+    ...(query.active === "true" ? { active: true } : {}),
+    ...(query.active === "false" ? { active: false } : {}),
+  };
+  const [items, total] = await prisma.$transaction([
+    prisma.jobPosition.findMany({
+      where,
+      skip,
+      take,
+      orderBy: [{ sortOrder: "asc" }, { name: sortDirection }],
+    }),
+    prisma.jobPosition.count({ where }),
+  ]);
+  return paginatedResult(items, total, page, pageSize);
+}
+
+export async function createJobPosition(
+  data: { name: string; sortOrder?: number; active?: boolean },
+  actorUserId: string,
+  req: Request,
+) {
+  try {
+    const created = await prisma.jobPosition.create({
+      data: {
+        name: data.name,
+        sortOrder: data.sortOrder ?? 0,
+        active: data.active ?? true,
+      },
+    });
+    await writeAuditLog({
+      actorUserId,
+      action: "JOB_POSITION_CREATED",
+      entityType: "JobPosition",
+      entityId: created.id,
+      after: created,
+      req,
+    });
+    return created;
+  } catch (error) {
+    handleUnique(error, "A job position with this name already exists");
+  }
+}
+
+export async function updateJobPosition(
+  id: string,
+  data: { name?: string; sortOrder?: number; active?: boolean },
+  actorUserId: string,
+  req: Request,
+) {
+  const existing = await prisma.jobPosition.findUnique({ where: { id } });
+  if (!existing) throw notFound("Job position");
+  try {
+    const updated = await prisma.jobPosition.update({ where: { id }, data });
+    await writeAuditLog({
+      actorUserId,
+      action: "JOB_POSITION_UPDATED",
+      entityType: "JobPosition",
+      entityId: id,
+      before: existing,
+      after: updated,
+      req,
+    });
+    return updated;
+  } catch (error) {
+    handleUnique(error, "A job position with this name already exists");
+  }
+}
+
 export async function getActiveLookups() {
-  const [trainingTypes, institutions, participationRoles, completionStatuses, settings] =
+  const [trainingTypes, institutions, participationRoles, completionStatuses, jobPositions, settings] =
     await Promise.all([
       prisma.trainingType.findMany({ where: { active: true }, orderBy: [{ sortOrder: "asc" }, { name: "asc" }] }),
       prisma.institution.findMany({ where: { active: true }, orderBy: { name: "asc" } }),
       prisma.participationRole.findMany({ where: { active: true }, orderBy: [{ sortOrder: "asc" }, { name: "asc" }] }),
       prisma.completionStatus.findMany({ where: { active: true }, orderBy: [{ sortOrder: "asc" }, { name: "asc" }] }),
+      prisma.jobPosition.findMany({ where: { active: true }, orderBy: [{ sortOrder: "asc" }, { name: "asc" }] }),
       prisma.appSetting.findUnique({ where: { id: "default" } }),
     ]);
 
@@ -316,10 +388,27 @@ export async function getActiveLookups() {
     institutions,
     participationRoles,
     completionStatuses,
+    jobPositions,
     allowHybridDelivery: settings?.allowHybridDelivery ?? true,
   };
+}
+
+export async function listActiveJobPositions() {
+  return prisma.jobPosition.findMany({
+    where: { active: true },
+    orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
+    select: { id: true, name: true, sortOrder: true, active: true },
+  });
 }
 
 export function assertMasterName(name: string) {
   if (!name.trim()) throw validationError("Name is required");
 }
+
+async function assertJobPositionId(jobPositionId: string) {
+  const position = await prisma.jobPosition.findUnique({ where: { id: jobPositionId } });
+  if (!position || !position.active) throw validationError("Select a valid job position");
+  return position;
+}
+
+export { assertJobPositionId };

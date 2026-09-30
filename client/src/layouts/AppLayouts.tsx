@@ -59,7 +59,7 @@ function TopBar({ home }: { home: string }) {
       : "Officer";
 
   return (
-    <header className="border-b-2 border-gold bg-navy text-white">
+    <header className="border-b-2 border-gold bg-navy text-white print:hidden">
       <div className="flex items-center justify-between gap-4 px-4 py-3 lg:px-5">
         <BrandMark to={home} light compact />
         <div className="flex items-center gap-3">
@@ -123,20 +123,20 @@ export function AdminLayout() {
   const adminLinks = adminLinksBase.filter((link) => !link.superOnly || user?.isSuperAdmin);
 
   return (
-    <div className="min-h-svh bg-paper">
+    <div className="min-h-svh bg-paper print:min-h-0 print:bg-white">
       <TopBar home="/admin" />
-      <div className="flex min-h-[calc(100svh-62px)]">
-        <aside className="hidden w-60 shrink-0 border-r border-slate-200 bg-white md:block">
+      <div className="flex min-h-[calc(100svh-62px)] print:min-h-0">
+        <aside className="hidden w-60 shrink-0 border-r border-slate-200 bg-white print:hidden md:block">
           <p className="px-4 pb-1 pt-4 text-[10px] font-semibold uppercase tracking-[0.16em] text-muted">Administration</p>
           <nav className="flex flex-col gap-0.5 p-3 pt-1">
             <NavItems links={adminLinks} />
           </nav>
         </aside>
         <div className="flex min-w-0 flex-1 flex-col">
-          <nav className="flex gap-2 overflow-x-auto border-b border-slate-200 bg-white px-3 py-2 md:hidden">
+          <nav className="flex gap-2 overflow-x-auto border-b border-slate-200 bg-white px-3 py-2 print:hidden md:hidden">
             <NavItems links={adminLinks} />
           </nav>
-          <main className="flex-1 overflow-x-hidden p-4 md:p-6 lg:p-8">
+          <main className="flex-1 overflow-x-hidden p-4 print:overflow-visible md:p-6 lg:p-8">
             <Outlet />
           </main>
         </div>

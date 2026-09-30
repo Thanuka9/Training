@@ -12,6 +12,7 @@ export const registerSchema = z
   .object({
     fullName: z.string().trim().min(2).max(150),
     bankId: bankIdField,
+    jobPositionId: z.string().uuid("Select a job position"),
     password: z.string().min(8).max(200),
     confirmPassword: z.string().min(8).max(200),
   })

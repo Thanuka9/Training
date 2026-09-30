@@ -1,6 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import { env } from "./env.js";
-import { createJsonClient, ensureExtraDemoOfficers, jsonStoreIsEmpty, jsonStorePath, seedJsonStore } from "../db/jsonStore.js";
+import { createJsonClient, ensureExtraDemoOfficers, ensureJobPositions, jsonStoreIsEmpty, jsonStorePath, seedJsonStore } from "../db/jsonStore.js";
 import { syncWorkbookMasterData } from "../services/workbookMasterSync.js";
 
 export type DataStoreMode = "sqlserver" | "json";
@@ -50,7 +50,8 @@ async function bootJsonStore() {
       testUserPassword: process.env.TEST_USER_PASSWORD,
     });
   } else {
-    await ensureExtraDemoOfficers(undefined, process.env.TEST_USER_PASSWORD);
+    await ensureJobPositions(prisma as unknown as ReturnType<typeof createJsonClient>);
+    await ensureExtraDemoOfficers(prisma as unknown as ReturnType<typeof createJsonClient>, process.env.TEST_USER_PASSWORD);
   }
   await ensureWorkbookCatalog(env.ADMIN_BANK_ID);
   console.warn(`Using JSON file store at ${jsonStorePath()} (SQL Server can be enabled later with DATA_STORE=sqlserver)`);

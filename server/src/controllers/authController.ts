@@ -1,9 +1,14 @@
 import type { Request, Response } from "express";
 import { registerSchema, loginSchema, changePasswordSchema } from "../validators/auth.js";
 import * as authService from "../services/authService.js";
+import * as masterData from "../services/masterDataService.js";
 import { sendSuccess, sendCreated } from "../utils/apiResponse.js";
 import { setAuthCookie, clearAuthCookie } from "../utils/cookies.js";
 import { requireAuth } from "../middleware/auth.js";
+
+export async function registerOptions(_req: Request, res: Response) {
+  return sendSuccess(res, { jobPositions: await masterData.listActiveJobPositions() });
+}
 
 export async function register(req: Request, res: Response) {
   const input = registerSchema.parse(req.body);

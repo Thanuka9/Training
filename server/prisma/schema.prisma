@@ -8,16 +8,18 @@ datasource db {
 }
 
 model User {
-  id           String    @id @default(uuid()) @db.UniqueIdentifier
-  bankId       String    @unique @db.NVarChar(50)
-  fullName     String    @db.NVarChar(150)
-  passwordHash String    @db.NVarChar(255)
-  role         String    @default("USER") @db.NVarChar(20)
-  status       String    @default("PENDING") @db.NVarChar(20)
-  lastLoginAt  DateTime?
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
+  id             String    @id @default(uuid()) @db.UniqueIdentifier
+  bankId         String    @unique @db.NVarChar(50)
+  fullName       String    @db.NVarChar(150)
+  passwordHash   String    @db.NVarChar(255)
+  role           String    @default("USER") @db.NVarChar(20)
+  status         String    @default("PENDING") @db.NVarChar(20)
+  jobPositionId  String?   @db.UniqueIdentifier
+  lastLoginAt    DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
 
+  jobPosition            JobPosition?            @relation(fields: [jobPositionId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   createdPrograms        TrainingProgram[]       @relation("ProgramCreator")
   participations         TrainingParticipation[]
   approvedParticipations TrainingParticipation[] @relation("ParticipationApprover")
@@ -26,6 +28,18 @@ model User {
   @@index([fullName])
   @@index([status])
   @@index([role])
+  @@index([jobPositionId])
+}
+
+model JobPosition {
+  id        String   @id @default(uuid()) @db.UniqueIdentifier
+  name      String   @unique @db.NVarChar(150)
+  active    Boolean  @default(true)
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  users User[]
 }
 
 model TrainingType {

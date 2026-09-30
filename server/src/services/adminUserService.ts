@@ -121,6 +121,7 @@ async function loadUsersWithStats(query: Record<string, unknown>) {
 
   const users = await prisma.user.findMany({
     where,
+    include: { jobPosition: true },
     orderBy: { createdAt: sortDirection },
   });
   const stats = await trainingStatsByUser(users.map((item) => item.id));
@@ -148,6 +149,7 @@ export async function listUsersForExport(query: Record<string, unknown>) {
     fullName: item.fullName,
     role: item.role,
     status: item.status,
+    jobPosition: item.jobPosition?.name ?? "",
     attended: item.attended,
     completed: item.completed,
     local: item.local,
@@ -162,7 +164,10 @@ export async function listUsersForExport(query: Record<string, unknown>) {
 }
 
 export async function getUser(id: string) {
-  const user = await prisma.user.findUnique({ where: { id } });
+  const user = await prisma.user.findUnique({
+    where: { id },
+    include: { jobPosition: true },
+  });
   if (!user) throw notFound("User");
   const stats = await trainingStatsByUser([id]);
   return withStats(toPublicUser(user), stats);
@@ -174,6 +179,7 @@ export async function createOfficerUser(
     fullName: string;
     bankId: string;
     password: string;
+    jobPositionId: string;
     status?: UserStatus;
   },
   actorUserId: string,
@@ -186,6 +192,9 @@ export async function createOfficerUser(
   const existing = await prisma.user.findUnique({ where: { bankId } });
   if (existing) throw conflict("A user with this Bank ID already exists");
 
+  const position = await prisma.jobPosition.findUnique({ where: { id: input.jobPositionId } });
+  if (!position || !position.active) throw validationError("Select a valid job position");
+
   const created = await prisma.user.create({
     data: {
       fullName: input.fullName,
@@ -193,7 +202,9 @@ export async function createOfficerUser(
       passwordHash: await hashPassword(input.password),
       role: "USER",
       status: input.status ?? "ACTIVE",
+      jobPositionId: input.jobPositionId,
     },
+    include: { jobPosition: true },
   });
 
   await writeAuditLog({
@@ -214,6 +225,7 @@ export async function createAdminUser(
     fullName: string;
     bankId: string;
     password: string;
+    jobPositionId: string;
     role?: Role;
     status?: UserStatus;
   },
@@ -271,7 +283,7 @@ export async function createAdminAccount(
 
 export async function updateAdminUser(
   id: string,
-  input: { fullName?: string; role?: Role; password?: string },
+  input: { fullName?: string; role?: Role; password?: string; jobPositionId?: string | null },
   actorUserId: string,
   req: Request,
 ) {
@@ -285,13 +297,20 @@ export async function updateAdminUser(
     assertNotSuperAdminMutation(existing.bankId, "demoted");
   }
 
+  if (input.jobPositionId) {
+    const position = await prisma.jobPosition.findUnique({ where: { id: input.jobPositionId } });
+    if (!position || !position.active) throw validationError("Select a valid job position");
+  }
+
   const updated = await prisma.user.update({
     where: { id },
     data: {
       fullName: input.fullName ?? existing.fullName,
       role: input.role ?? existing.role,
       ...(input.password ? { passwordHash: await hashPassword(input.password) } : {}),
+      ...(input.jobPositionId !== undefined ? { jobPositionId: input.jobPositionId } : {}),
     },
+    include: { jobPosition: true },
   });
 
   await writeAuditLog({

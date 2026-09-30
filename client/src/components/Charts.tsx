@@ -35,36 +35,60 @@ function displayName(name: string) {
 
 export function Donut({ data }: { data: { name: string; count: number }[] }) {
   const chartData = data.map((item) => ({ ...item, label: displayName(item.name) }));
+  const renderPie = () => (
+    <>
+      <Pie data={chartData} dataKey="count" nameKey="label" innerRadius={55} outerRadius={90}>
+        {chartData.map((entry, index) => (
+          <Cell key={entry.name} fill={chartColor(entry.name, index)} />
+        ))}
+      </Pie>
+      <Tooltip />
+      <Legend />
+    </>
+  );
   return (
-    <ResponsiveContainer width="100%" height={260}>
-      <PieChart>
-        <Pie data={chartData} dataKey="count" nameKey="label" innerRadius={55} outerRadius={90}>
-          {chartData.map((entry, index) => (
-            <Cell key={entry.name} fill={chartColor(entry.name, index)} />
-          ))}
-        </Pie>
-        <Tooltip />
-        <Legend />
-      </PieChart>
-    </ResponsiveContainer>
+    <>
+      <div className="print:hidden">
+        <ResponsiveContainer width="100%" height={260}>
+          <PieChart>{renderPie()}</PieChart>
+        </ResponsiveContainer>
+      </div>
+      <div className="hidden print:block">
+        <PieChart width={700} height={240}>
+          {renderPie()}
+        </PieChart>
+      </div>
+    </>
   );
 }
 
 export function BarBlock({ data }: { data: { name: string; count: number }[] }) {
   const chartData = data.map((item) => ({ ...item, label: displayName(item.name) }));
+  const renderBars = () => (
+    <>
+      <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+      <XAxis dataKey="label" hide={chartData.length > 6} interval={0} />
+      <YAxis allowDecimals={false} />
+      <Tooltip />
+      <Bar dataKey="count">
+        {chartData.map((entry, index) => (
+          <Cell key={entry.name} fill={chartColor(entry.name, index)} />
+        ))}
+      </Bar>
+    </>
+  );
   return (
-    <ResponsiveContainer width="100%" height={260}>
-      <BarChart data={chartData}>
-        <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-        <XAxis dataKey="label" hide={chartData.length > 6} interval={0} />
-        <YAxis allowDecimals={false} />
-        <Tooltip />
-        <Bar dataKey="count">
-          {chartData.map((entry, index) => (
-            <Cell key={entry.name} fill={chartColor(entry.name, index)} />
-          ))}
-        </Bar>
-      </BarChart>
-    </ResponsiveContainer>
+    <>
+      <div className="print:hidden">
+        <ResponsiveContainer width="100%" height={260}>
+          <BarChart data={chartData}>{renderBars()}</BarChart>
+        </ResponsiveContainer>
+      </div>
+      <div className="hidden print:block">
+        <BarChart width={700} height={240} data={chartData}>
+          {renderBars()}
+        </BarChart>
+      </div>
+    </>
   );
 }

@@ -15,6 +15,7 @@ router.get("/dashboard/top-institutions", asyncHandler(adminController.dashboard
 router.get("/dashboard/top-officers", asyncHandler(adminController.dashboardTopOfficers));
 router.get("/dashboard/rankings", asyncHandler(adminController.dashboardRankings));
 router.get("/dashboard/yearly", asyncHandler(adminController.dashboardYearly));
+router.get("/dashboard/by-position", asyncHandler(adminController.dashboardByPosition));
 router.get("/dashboard/compare", asyncHandler(adminController.dashboardCompare));
 router.get("/officers", asyncHandler(adminController.listOfficersSelect));
 
@@ -59,6 +60,10 @@ router.put("/participation-roles/:id", asyncHandler(adminController.updateRole))
 router.get("/completion-statuses", asyncHandler(adminController.listCompletionStatuses));
 router.post("/completion-statuses", asyncHandler(adminController.createCompletionStatus));
 router.put("/completion-statuses/:id", asyncHandler(adminController.updateCompletionStatus));
+
+router.get("/job-positions", asyncHandler(adminController.listJobPositions));
+router.post("/job-positions", requireSuperAdmin, asyncHandler(adminController.createJobPosition));
+router.put("/job-positions/:id", requireSuperAdmin, asyncHandler(adminController.updateJobPosition));
 
 router.get("/reports/training-register", asyncHandler(adminController.trainingRegister));
 router.get("/reports/officer-summary", asyncHandler(adminController.officerSummary));

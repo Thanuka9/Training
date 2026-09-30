@@ -57,6 +57,10 @@ export async function dashboardYearly(req: Request, res: Response) {
   return sendSuccess(res, await officerAnalytics.getYearlyTraining(req.query));
 }
 
+export async function dashboardByPosition(req: Request, res: Response) {
+  return sendSuccess(res, await officerAnalytics.getTrainingsByPosition(req.query));
+}
+
 export async function dashboardCompare(req: Request, res: Response) {
   return sendSuccess(
     res,
@@ -224,6 +228,18 @@ export async function createCompletionStatus(req: Request, res: Response) {
 export async function updateCompletionStatus(req: Request, res: Response) {
   const actor = requireAuth(req);
   return sendSuccess(res, await masterData.updateCompletionStatus(req.params.id, completionStatusSchema.partial().parse(req.body), actor.id, req));
+}
+
+export async function listJobPositions(req: Request, res: Response) {
+  return sendSuccess(res, await masterData.listJobPositions(req.query));
+}
+export async function createJobPosition(req: Request, res: Response) {
+  const actor = requireAuth(req);
+  return sendCreated(res, await masterData.createJobPosition(namedMasterSchema.parse(req.body), actor.id, req));
+}
+export async function updateJobPosition(req: Request, res: Response) {
+  const actor = requireAuth(req);
+  return sendSuccess(res, await masterData.updateJobPosition(req.params.id, namedMasterSchema.partial().parse(req.body), actor.id, req));
 }
 
 export async function trainingRegister(req: Request, res: Response) {

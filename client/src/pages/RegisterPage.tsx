@@ -1,5 +1,6 @@
-import { useRef, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import { Link } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { authApi } from "@/api/auth";
 import { ApiRequestError } from "@/api/client";
@@ -8,11 +9,13 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select } from "@/components/ui/select";
 import { bankIdNeedsPadding, normalizeBankId } from "@/lib/bankId";
 
 export function RegisterPage() {
   const [fullName, setFullName] = useState("");
   const [bankId, setBankId] = useState("");
+  const [jobPositionId, setJobPositionId] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [pending, setPending] = useState(false);
@@ -20,6 +23,11 @@ export function RegisterPage() {
   const [claimedImported, setClaimedImported] = useState(false);
   const [padDialog, setPadDialog] = useState<{ before: string; after: string; resumeSubmit: boolean } | null>(null);
   const acknowledgedPadRef = useRef<string | null>(null);
+
+  const options = useQuery({
+    queryKey: ["register-options"],
+    queryFn: authApi.registerOptions,
+  });
 
   function applyBankIdPadding(value: string) {
     const before = value.trim();
@@ -41,11 +49,16 @@ export function RegisterPage() {
   }
 
   async function submitRegistration(normalizedBankId: string) {
+    if (!jobPositionId) {
+      toast.error("Select your job position");
+      return;
+    }
     setPending(true);
     try {
       const result = await authApi.register({
         fullName,
         bankId: normalizedBankId,
+        jobPositionId,
         password,
         confirmPassword,
       });
@@ -82,6 +95,12 @@ export function RegisterPage() {
       void submitRegistration(padDialog.after);
     }
   }
+
+  useEffect(() => {
+    if (!jobPositionId && options.data?.jobPositions.length === 1) {
+      setJobPositionId(options.data.jobPositions[0].id);
+    }
+  }, [options.data, jobPositionId]);
 
   return (
     <main className="mx-auto max-w-md px-4 py-16">
@@ -129,6 +148,24 @@ export function RegisterPage() {
                 <p className="mt-1 text-xs text-muted">
                   Permanent identifier (min. 4 characters; shorter IDs are padded with leading zeros, e.g. 12 → 0012). Cannot be changed later.
                 </p>
+              </div>
+              <div>
+                <Label htmlFor="jobPosition">Position</Label>
+                <Select
+                  id="jobPosition"
+                  value={jobPositionId}
+                  onChange={(e) => setJobPositionId(e.target.value)}
+                  required
+                  disabled={options.isLoading}
+                >
+                  <option value="">{options.isLoading ? "Loading…" : "Select position"}</option>
+                  {(options.data?.jobPositions ?? []).map((item) => (
+                    <option key={item.id} value={item.id}>
+                      {item.name}
+                    </option>
+                  ))}
+                </Select>
+                <p className="mt-1 text-xs text-muted">Required. Only an administrator can change this later.</p>
               </div>
               <div>
                 <Label htmlFor="password">Password</Label>

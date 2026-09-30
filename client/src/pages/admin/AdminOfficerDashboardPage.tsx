@@ -30,36 +30,69 @@ export function AdminOfficerDashboardPage() {
   });
   const data = query.data;
 
+  function printPdf() {
+    window.dispatchEvent(new Event("resize"));
+    window.setTimeout(() => window.print(), 250);
+  }
+
   return (
-    <div className="space-y-6">
-      <PageHeader
-        title={data ? data.user.fullName : "Officer dashboard"}
-        description={
-          data
-            ? `Bank ID ${data.user.bankId} · ${data.user.status}. Same personal stats the officer sees, plus year-wise attendance.`
-            : "Loading officer statistics…"
-        }
-        actions={
-          <div className="flex flex-wrap gap-2">
-            {data ? (
-              <Link to={`/admin/records?bankId=${encodeURIComponent(data.user.bankId)}`}>
-                <Button variant="secondary">Training history</Button>
+    <div className="space-y-6 officer-print-root">
+      <div className="print:hidden">
+        <PageHeader
+          title={data ? data.user.fullName : "Officer dashboard"}
+          description={
+            data
+              ? `Bank ID ${data.user.bankId} · ${data.user.status}${data.user.jobPosition ? ` · ${data.user.jobPosition.name}` : ""}. Same personal stats the officer sees, plus year-wise attendance.`
+              : "Loading officer statistics…"
+          }
+          actions={
+            <div className="flex flex-wrap gap-2">
+              {data ? (
+                <>
+                  <Button variant="gold" onClick={printPdf}>
+                    Print PDF
+                  </Button>
+                  <Link to={`/admin/records?bankId=${encodeURIComponent(data.user.bankId)}`}>
+                    <Button variant="secondary">Training history</Button>
+                  </Link>
+                </>
+              ) : null}
+              <Link to="/admin/users">
+                <Button variant="secondary">Back to users</Button>
               </Link>
-            ) : null}
-            <Link to="/admin/users">
-              <Button variant="secondary">Back to users</Button>
-            </Link>
-          </div>
-        }
-      />
+            </div>
+          }
+        />
+      </div>
+
       <QueryState isLoading={query.isLoading} error={query.error} empty={!data}>
         {data ? (
           <>
-            <div className="flex flex-wrap gap-2 text-sm">
+            <header className="hidden print:block print-cover">
+              <p className="print-kicker">Bank Supervision Department · Training Management Portal</p>
+              <h1 className="print-title">{data.user.fullName}</h1>
+              <p className="print-meta">Officer training dashboard</p>
+            </header>
+
+            <Card className="print-keep">
+              <CardHeader>
+                <CardTitle>Officer details</CardTitle>
+              </CardHeader>
+              <CardContent className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                <Detail label="Full name" value={data.user.fullName} />
+                <Detail label="Bank ID" value={data.user.bankId} />
+                <Detail label="Position" value={data.user.jobPosition?.name ?? "Not set"} />
+                <Detail label="Account status" value={data.user.status} />
+              </CardContent>
+            </Card>
+
+            <div className="flex flex-wrap gap-2 text-sm print:hidden">
               <Badge tone={data.user.status === "ACTIVE" ? "green" : "amber"}>{data.user.status}</Badge>
+              {data.user.jobPosition ? <Badge tone="navy">{data.user.jobPosition.name}</Badge> : null}
               <Badge tone="navy">{data.kpis.attended} trainings attended</Badge>
             </div>
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5 print:grid-cols-5">
               <KpiCard label="Trainings attended" value={data.kpis.attended} hint="Excludes drafts" />
               <KpiCard label="Completed" value={data.kpis.completed} />
               <KpiCard label="Local" value={data.kpis.local} />
@@ -71,31 +104,58 @@ export function AdminOfficerDashboardPage() {
               <KpiCard label="Approved" value={data.kpis.approved} />
               <KpiCard label="Drafts" value={data.kpis.draft} />
             </div>
-            <div className="grid gap-4 xl:grid-cols-2">
-              <ChartCard title="Trainings by year">
-                <ResponsiveContainer width="100%" height={260}>
-                  <BarChart data={data.yearly.map((item) => ({ ...item, label: String(item.year) }))}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                    <XAxis dataKey="label" />
-                    <YAxis allowDecimals={false} />
-                    <Tooltip />
-                    <Legend />
-                    <Bar dataKey="local" name="Local" fill={LINE_COLOR} />
-                    <Bar dataKey="foreign" name="Foreign" fill={GOLD_COLOR} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </ChartCard>
-              <ChartCard title="Local vs Foreign">
-                <Donut data={data.distributions.locationScope} />
-              </ChartCard>
-              <ChartCard title="Physical vs Online vs Hybrid">
-                <Donut data={data.distributions.deliveryMode} />
-              </ChartCard>
-              <ChartCard title="Completion status">
-                <BarBlock data={data.distributions.completionStatus} />
-              </ChartCard>
+
+            <div className="grid gap-4 xl:grid-cols-2 print:grid-cols-2">
+              <div className="print-keep">
+                <ChartCard title="Trainings by year">
+                  <div className="print:hidden h-64">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={data.yearly.map((item) => ({ ...item, label: String(item.year) }))}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                        <XAxis dataKey="label" />
+                        <YAxis allowDecimals={false} />
+                        <Tooltip />
+                        <Legend />
+                        <Bar dataKey="local" name="Local" fill={LINE_COLOR} />
+                        <Bar dataKey="foreign" name="Foreign" fill={GOLD_COLOR} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                  <div className="hidden print:block">
+                    <BarChart
+                      width={700}
+                      height={240}
+                      data={data.yearly.map((item) => ({ ...item, label: String(item.year) }))}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                      <XAxis dataKey="label" />
+                      <YAxis allowDecimals={false} />
+                      <Tooltip />
+                      <Legend />
+                      <Bar dataKey="local" name="Local" fill={LINE_COLOR} />
+                      <Bar dataKey="foreign" name="Foreign" fill={GOLD_COLOR} />
+                    </BarChart>
+                  </div>
+                </ChartCard>
+              </div>
+              <div className="print-keep">
+                <ChartCard title="Local vs Foreign">
+                  <Donut data={data.distributions.locationScope} />
+                </ChartCard>
+              </div>
+              <div className="print-keep">
+                <ChartCard title="Physical vs Online vs Hybrid">
+                  <Donut data={data.distributions.deliveryMode} />
+                </ChartCard>
+              </div>
+              <div className="print-keep">
+                <ChartCard title="Completion status">
+                  <BarBlock data={data.distributions.completionStatus} />
+                </ChartCard>
+              </div>
             </div>
-            <Card>
+
+            <Card className="print-keep">
               <CardHeader>
                 <CardTitle>Recent training records</CardTitle>
               </CardHeader>
@@ -111,7 +171,7 @@ export function AdminOfficerDashboardPage() {
                         <Th>To</Th>
                         <Th>Completion</Th>
                         <Th>Workflow</Th>
-                        <Th></Th>
+                        <Th className="print:hidden"></Th>
                       </tr>
                     </THead>
                     <tbody>
@@ -128,7 +188,7 @@ export function AdminOfficerDashboardPage() {
                           <Td>
                             <WorkflowBadge status={item.workflowStatus} />
                           </Td>
-                          <Td>
+                          <Td className="print:hidden">
                             <Link className="text-navy underline" to={`/admin/records/${item.id}`}>
                               Open
                             </Link>
@@ -143,6 +203,15 @@ export function AdminOfficerDashboardPage() {
           </>
         ) : null}
       </QueryState>
+    </div>
+  );
+}
+
+function Detail({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <p className="text-xs font-bold uppercase tracking-[0.08em] text-navy">{label}</p>
+      <p className="mt-1 text-sm font-semibold text-ink">{value}</p>
     </div>
   );
 }

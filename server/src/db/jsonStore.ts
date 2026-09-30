@@ -19,6 +19,7 @@ const STORE_PATH = fileURLToPath(new URL("../../data/store.json", import.meta.ur
 
 const collections: Record<string, string> = {
   user: "users",
+  jobPosition: "jobPositions",
   trainingType: "trainingTypes",
   institution: "institutions",
   participationRole: "participationRoles",
@@ -31,6 +32,7 @@ const collections: Record<string, string> = {
 
 const uniqueFields: Record<string, string[]> = {
   users: ["id", "bankId"],
+  jobPositions: ["id", "name"],
   trainingTypes: ["id", "name"],
   institutions: ["id", "name"],
   participationRoles: ["id", "name"],
@@ -42,6 +44,7 @@ const uniqueFields: Record<string, string[]> = {
 };
 
 const relations: Record<string, { field: string; collection: string; many?: boolean; fk?: string }> = {
+  jobPosition: { field: "jobPositionId", collection: "jobPositions" },
   trainingType: { field: "trainingTypeId", collection: "trainingTypes" },
   institution: { field: "institutionId", collection: "institutions" },
   createdBy: { field: "createdById", collection: "users" },
@@ -52,11 +55,13 @@ const relations: Record<string, { field: string; collection: string; many?: bool
   completionStatus: { field: "completionStatusId", collection: "completionStatuses" },
   trainingProgram: { field: "trainingProgramId", collection: "trainingPrograms" },
   participations: { field: "id", collection: "trainingParticipations", many: true, fk: "trainingProgramId" },
+  users: { field: "id", collection: "users", many: true, fk: "jobPositionId" },
 };
 
 function emptyStore(): Store {
   return {
     users: [],
+    jobPositions: [],
     trainingTypes: [],
     institutions: [],
     participationRoles: [],
@@ -383,6 +388,30 @@ export function jsonStoreIsEmpty() {
   return (store.users?.length ?? 0) === 0;
 }
 
+export const DEFAULT_JOB_POSITIONS = [
+  { name: "Director", sortOrder: 1 },
+  { name: "Additional Director", sortOrder: 2 },
+  { name: "Deputy Director", sortOrder: 3 },
+  { name: "Senior Assistant Director", sortOrder: 4 },
+  { name: "Assistant Director", sortOrder: 5 },
+  { name: "Management Assistant", sortOrder: 6 },
+  { name: "Personal Assistant", sortOrder: 7 },
+  { name: "Contract Staff", sortOrder: 8 },
+  { name: "Outsourced Staff", sortOrder: 9 },
+] as const;
+
+export async function ensureJobPositions(client?: ReturnType<typeof createJsonClient>) {
+  const db = client ?? createJsonClient();
+  if (!store.jobPositions) store.jobPositions = [];
+  for (const item of DEFAULT_JOB_POSITIONS) {
+    await db.jobPosition.upsert({
+      where: { name: item.name },
+      update: { sortOrder: item.sortOrder, active: true },
+      create: { name: item.name, sortOrder: item.sortOrder, active: true },
+    });
+  }
+}
+
 export async function seedJsonStore(env: {
   adminBankId?: string;
   adminName?: string;
@@ -394,6 +423,8 @@ export async function seedJsonStore(env: {
   const adminName = env.adminName ?? "System Administrator";
   const adminPassword = env.adminPassword ?? "ChangeMeNow123";
   const testPassword = env.testUserPassword ?? "Training9672";
+
+  await ensureJobPositions(client);
 
   const admin = await client.user.upsert({
     where: { bankId: adminBankId },
@@ -553,6 +584,7 @@ export async function seedJsonStore(env: {
       passwordHash: await bcrypt.hash(testPassword, 12),
       role: "USER",
       status: "ACTIVE",
+      jobPositionId: (await client.jobPosition.findUnique({ where: { name: "Assistant Director" } }))?.id,
     },
   });
 
@@ -589,17 +621,30 @@ export async function seedJsonStore(env: {
 /** Extra officers for attendance demos — safe to call on every JSON boot. */
 export async function ensureExtraDemoOfficers(client?: ReturnType<typeof createJsonClient>, password = "Training9672") {
   const db = client ?? createJsonClient();
+  await ensureJobPositions(db);
+
+  const positionByName = async (name: string) => {
+    const row = await db.jobPosition.findUnique({ where: { name } });
+    return row?.id as string | undefined;
+  };
+
   const extras = [
-    { bankId: "1001", fullName: "Nimal Perera" },
-    { bankId: "1002", fullName: "Samanthi Jayasuriya" },
-    { bankId: "1003", fullName: "Kasun Fernando" },
-    { bankId: "1004", fullName: "Dilani Wickramasinghe" },
-    { bankId: "1005", fullName: "Ruwan Silva" },
+    { bankId: "1001", fullName: "Nimal Perera", position: "Deputy Director" },
+    { bankId: "1002", fullName: "Samanthi Jayasuriya", position: "Senior Assistant Director" },
+    { bankId: "1003", fullName: "Kasun Fernando", position: "Assistant Director" },
+    { bankId: "1004", fullName: "Dilani Wickramasinghe", position: "Management Assistant" },
+    { bankId: "1005", fullName: "Ruwan Silva", position: "Contract Staff" },
   ];
   const hash = await bcrypt.hash(password, 12);
   for (const officer of extras) {
     const existing = await db.user.findUnique({ where: { bankId: officer.bankId } });
-    if (existing) continue;
+    const jobPositionId = await positionByName(officer.position);
+    if (existing) {
+      if (!existing.jobPositionId && jobPositionId) {
+        await db.user.update({ where: { id: existing.id }, data: { jobPositionId } });
+      }
+      continue;
+    }
     await db.user.create({
       data: {
         bankId: officer.bankId,
@@ -607,8 +652,15 @@ export async function ensureExtraDemoOfficers(client?: ReturnType<typeof createJ
         passwordHash: hash,
         role: "USER",
         status: "ACTIVE",
+        ...(jobPositionId ? { jobPositionId } : {}),
       },
     });
+  }
+
+  const assistantDirectorId = await positionByName("Assistant Director");
+  const thanuka = await db.user.findUnique({ where: { bankId: "9672" } });
+  if (thanuka && !thanuka.jobPositionId && assistantDirectorId) {
+    await db.user.update({ where: { id: thanuka.id }, data: { jobPositionId: assistantDirectorId } });
   }
 
   const pending = await db.user.findUnique({ where: { bankId: "2001" } });
@@ -620,8 +672,14 @@ export async function ensureExtraDemoOfficers(client?: ReturnType<typeof createJ
         passwordHash: hash,
         role: "USER",
         status: "PENDING",
+        jobPositionId: await positionByName("Personal Assistant"),
       },
     });
+  } else if (!pending.jobPositionId) {
+    const personalAssistantId = await positionByName("Personal Assistant");
+    if (personalAssistantId) {
+      await db.user.update({ where: { id: pending.id }, data: { jobPositionId: personalAssistantId } });
+    }
   }
 
   const secondProgram = await db.trainingProgram.findFirst({
@@ -682,7 +740,6 @@ export async function ensureExtraDemoOfficers(client?: ReturnType<typeof createJ
   }
 
   // Same officer, second programme in the same year — allowed and counted separately.
-  const thanuka = await db.user.findUnique({ where: { bankId: "9672" } });
   if (thanuka && thirdProgram && participant && completed) {
     const existing = await db.trainingParticipation.findFirst({
       where: { userId: thanuka.id, trainingProgramId: thirdProgram.id },

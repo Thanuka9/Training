@@ -79,6 +79,10 @@ export function AdminDashboardPage() {
     queryFn: () => adminApi.topOfficers(filters),
   });
   const yearly = useQuery({ queryKey: ["admin-yearly", yearlyFilters], queryFn: () => adminApi.yearly(yearlyFilters) });
+  const byPosition = useQuery({
+    queryKey: ["admin-by-position", filters.year],
+    queryFn: () => adminApi.byPosition({ year: filters.year }),
+  });
   const rankings = useQuery({ queryKey: ["admin-rankings", rankFilters], queryFn: () => adminApi.rankings(rankFilters) });
 
   const refreshing =
@@ -98,19 +102,14 @@ export function AdminDashboardPage() {
     () => [
       ["Total Active Users", kpis.activeUsers, "/admin/users?status=ACTIVE"],
       ["Pending User Registrations", kpis.pendingRegistrations, "/admin/users?status=PENDING"],
-      ["Officers with training", kpis.officersWithTraining, "/admin/users?neverAttended=false"],
-      ["Officers with no training", kpis.officersNeverAttended, "/admin/users?neverAttended=true"],
       ["Total Training Programs", kpis.totalPrograms, "/admin/training-programs"],
       ["Participation records", kpis.totalSubmittedRecords, `/admin/records?year=${filters.year ?? ""}`],
       ["Pending Reviews", kpis.pendingReviews, "/admin/records?workflowStatus=SUBMITTED"],
       ["Approved Records", kpis.approvedRecords, `/admin/records?workflowStatus=APPROVED&year=${filters.year ?? ""}`],
-      ["Completed Trainings", kpis.completedTrainings, `/admin/records?year=${filters.year ?? ""}`],
-      ["Completion Rate", kpis.completionRate != null ? `${kpis.completionRate}%` : "—", "/admin/reports"],
       ["Local Trainings", kpis.localTrainings, `/admin/records?locationScope=LOCAL&year=${filters.year ?? ""}`],
       ["Foreign Trainings", kpis.foreignTrainings, `/admin/records?locationScope=FOREIGN&year=${filters.year ?? ""}`],
-      ["Physical Trainings", kpis.physicalTrainings, `/admin/records?deliveryMode=PHYSICAL&year=${filters.year ?? ""}`],
-      ["Online Trainings", kpis.onlineTrainings, `/admin/records?deliveryMode=ONLINE&year=${filters.year ?? ""}`],
-      ["Hybrid Trainings", kpis.hybridTrainings, `/admin/records?deliveryMode=HYBRID&year=${filters.year ?? ""}`],
+      ["Completed Trainings", kpis.completedTrainings, `/admin/records?year=${filters.year ?? ""}`],
+      ["Officers with no training", kpis.officersNeverAttended, "/admin/users?neverAttended=true"],
     ],
     [kpis, filters.year],
   );
@@ -215,9 +214,7 @@ export function AdminDashboardPage() {
             <KpiCard key={`${filters.year}-${String(label)}`} label={String(label)} value={value ?? "—"} onClick={() => navigate(String(href))} />
           ))}
         </div>
-        <p className="text-xs text-slate-500">
-          Completion rate = Completed / (Completed + Not Completed). Planned and ongoing records are excluded from the denominator.
-        </p>
+        <p className="text-xs text-slate-500">Click a KPI card to open the matching list or filter.</p>
       </QueryState>
       <div key={filters.year} className="grid gap-4 xl:grid-cols-2">
         <ChartCard title={`Training participation by month (${filters.year})`}>
@@ -337,6 +334,38 @@ export function AdminDashboardPage() {
                 <Bar dataKey="total" name="Total trainings" fill={LINE_COLOR} />
                 <Bar dataKey="local" name="Local" fill="#0f766e" />
                 <Bar dataKey="foreign" name="Foreign" fill={GOLD_COLOR} />
+              </BarChart>
+            </ResponsiveContainer>
+          </QueryState>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Training by job position ({filters.year})</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <p className="text-sm text-slate-600">
+            Number of trainings and how many officers in each position attended at least one programme in the selected year.
+          </p>
+          <QueryState isLoading={byPosition.isLoading} error={byPosition.error}>
+            <ResponsiveContainer width="100%" height={380}>
+              <BarChart data={byPosition.data?.rows ?? []} margin={{ bottom: 96, left: 8, right: 8 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                <XAxis
+                  dataKey="label"
+                  interval={0}
+                  angle={-32}
+                  textAnchor="end"
+                  height={100}
+                  tick={{ fontSize: 13, fontWeight: 700, fill: "#12355b" }}
+                />
+                <YAxis allowDecimals={false} tick={{ fontSize: 12, fill: "#334155" }} />
+                <Tooltip />
+                <Legend wrapperStyle={{ fontSize: 13, fontWeight: 600 }} />
+                <Bar dataKey="trainings" name="Trainings" fill={LINE_COLOR} />
+                <Bar dataKey="withTraining" name="Officers with training" fill="#0f766e" />
+                <Bar dataKey="withoutTraining" name="Officers with no training" fill={GOLD_COLOR} />
               </BarChart>
             </ResponsiveContainer>
           </QueryState>

@@ -53,6 +53,11 @@ export function ProfilePage() {
                 <Label>Bank ID</Label>
                 <Input value={user?.bankId ?? ""} readOnly disabled />
               </div>
+              <div className="sm:col-span-2">
+                <Label>Position</Label>
+                <Input value={user?.jobPosition?.name ?? "Not set"} readOnly disabled />
+                <p className="mt-1 text-xs text-muted">Only an administrator can change your position.</p>
+              </div>
             </div>
           </CardContent>
         </Card>

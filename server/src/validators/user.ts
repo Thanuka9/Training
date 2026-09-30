@@ -12,6 +12,7 @@ const bankIdField = z
 export const adminCreateUserSchema = z.object({
   fullName: z.string().trim().min(2).max(150),
   bankId: bankIdField,
+  jobPositionId: z.string().uuid("Select a job position"),
   password: z.string().min(8).max(200),
   status: z.enum(["PENDING", "ACTIVE", "DISABLED", "REJECTED"]).default("ACTIVE"),
 });
@@ -26,6 +27,7 @@ export const adminUpdateUserSchema = z.object({
   fullName: z.string().trim().min(2).max(150).optional(),
   role: z.enum(["USER", "ADMIN"]).optional(),
   password: z.string().min(8).max(200).optional(),
+  jobPositionId: z.string().uuid("Select a job position").nullable().optional(),
 });
 
 export const rejectUserSchema = z.object({

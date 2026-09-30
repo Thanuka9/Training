@@ -13,6 +13,7 @@ const authLimiter = rateLimit({
   legacyHeaders: false,
 });
 
+router.get("/register-options", asyncHandler(authController.registerOptions));
 router.post("/register", authLimiter, asyncHandler(authController.register));
 router.post("/login", authLimiter, asyncHandler(authController.login));
 router.post("/logout", asyncHandler(authController.logout));

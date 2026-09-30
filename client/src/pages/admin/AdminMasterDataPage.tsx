@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { adminApi } from "@/api/admin";
+import { useAuth } from "@/features/auth/AuthProvider";
 import { PageHeader, QueryState } from "@/components/PageHeader";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -12,12 +13,36 @@ import { Table, THead, Th, Td } from "@/components/ui/table";
 import type { NamedEntity } from "@/types";
 
 export function AdminMasterDataPage() {
+  const { user } = useAuth();
+  const isSuperAdmin = Boolean(user?.isSuperAdmin);
+
   return (
     <div className="space-y-6">
       <PageHeader
         title="Master Data"
-        description="Add or archive the dropdown values used on training programmes and the officer participation form (types, institutions, roles, completion statuses). This is how admin extends what officers can choose — form column names stay fixed to the training register."
+        description="Add or archive dropdown values used on programmes and the participation form. Job positions (officer designation) are managed by the super administrator."
       />
+      {isSuperAdmin ? (
+        <MasterSection
+          title="Job Positions"
+          description="Used on officer registration. Officers cannot change their own position — admins can update it on Users."
+          queryKey="job-positions"
+          list={() => adminApi.jobPositions({ pageSize: 100 })}
+          create={(payload) => adminApi.createJobPosition(payload)}
+          update={(id, payload) => adminApi.updateJobPosition(id, payload)}
+          extra
+        />
+      ) : (
+        <Card>
+          <CardHeader>
+            <CardTitle>Job Positions</CardTitle>
+          </CardHeader>
+          <CardContent className="text-sm text-slate-600">
+            Only the super administrator can add, rename or archive job positions. Admins can still assign a position when
+            editing an officer.
+          </CardContent>
+        </Card>
+      )}
       <MasterSection
         title="Training Types"
         queryKey="training-types"
@@ -56,6 +81,7 @@ export function AdminMasterDataPage() {
 
 function MasterSection({
   title,
+  description,
   queryKey,
   list,
   create,
@@ -64,6 +90,7 @@ function MasterSection({
   final,
 }: {
   title: string;
+  description?: string;
   queryKey: string;
   list: () => Promise<{ items: NamedEntity[] }>;
   create: (payload: Record<string, unknown>) => Promise<unknown>;
@@ -79,6 +106,7 @@ function MasterSection({
     <Card>
       <CardHeader>
         <CardTitle>{title}</CardTitle>
+        {description ? <p className="mt-1 text-sm font-normal text-slate-600">{description}</p> : null}
       </CardHeader>
       <CardContent>
         <form
@@ -106,7 +134,7 @@ function MasterSection({
             <THead>
               <tr>
                 <Th>Name</Th>
-                {extra ? <Th>Order</Th> : null}
+                {extra ? <Th>Sort</Th> : null}
                 {final ? <Th>Final</Th> : null}
                 <Th>Status</Th>
                 <Th></Th>
@@ -116,7 +144,7 @@ function MasterSection({
               {query.data?.items.map((item) => (
                 <tr key={item.id}>
                   <Td>{item.name}</Td>
-                  {extra ? <Td>{item.sortOrder ?? 0}</Td> : null}
+                  {extra ? <Td>{item.sortOrder ?? "—"}</Td> : null}
                   {final ? <Td>{item.isFinal ? "Yes" : "No"}</Td> : null}
                   <Td>
                     <Badge tone={item.active ? "green" : "slate"}>{item.active ? "Active" : "Archived"}</Badge>
@@ -125,8 +153,13 @@ function MasterSection({
                     <button
                       className="text-navy underline"
                       onClick={async () => {
-                        await update(item.id, { active: !item.active });
-                        await queryClient.invalidateQueries({ queryKey: ["master", queryKey] });
+                        try {
+                          await update(item.id, { active: !item.active });
+                          toast.success(item.active ? "Archived" : "Reactivated");
+                          await queryClient.invalidateQueries({ queryKey: ["master", queryKey] });
+                        } catch (error) {
+                          toast.error(error instanceof Error ? error.message : "Unable to update");
+                        }
                       }}
                     >
                       {item.active ? "Archive" : "Reactivate"}

@@ -64,13 +64,38 @@ export function UserDashboardPage() {
     <div className="space-y-6">
       <PageHeader
         title={`Welcome, ${user?.fullName ?? "Officer"}`}
-        description={`Bank ID ${user?.bankId ?? "—"}. Your personal training overview — change Year to refresh KPIs and charts.`}
+        description="Your personal training overview — change Year to refresh KPIs and charts."
         actions={
           <Link to="/app/training/new">
             <Button>Add Training Record</Button>
           </Link>
         }
       />
+
+      <Card className="border-navy/10 shadow-sm">
+        <CardHeader>
+          <CardTitle>Your details</CardTitle>
+        </CardHeader>
+        <CardContent className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[0.08em] text-navy">Full name</p>
+            <p className="mt-1 text-sm font-semibold text-ink">{user?.fullName ?? "—"}</p>
+          </div>
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[0.08em] text-navy">Bank ID</p>
+            <p className="mt-1 text-sm font-semibold text-ink">{user?.bankId ?? "—"}</p>
+          </div>
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[0.08em] text-navy">Position</p>
+            <p className="mt-1 text-sm font-semibold text-ink">{user?.jobPosition?.name ?? "Not set"}</p>
+            <p className="mt-1 text-xs text-muted">Only an administrator can change your position.</p>
+          </div>
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[0.08em] text-navy">Account status</p>
+            <p className="mt-1 text-sm font-semibold text-ink">{user?.status ?? "—"}</p>
+          </div>
+        </CardContent>
+      </Card>
 
       <Card className="border-navy/10 shadow-sm">
         <CardContent className="grid gap-3 pt-4 sm:grid-cols-2 lg:grid-cols-4">
